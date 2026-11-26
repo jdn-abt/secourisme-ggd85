@@ -1,0 +1,2766 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0B1E3D" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Secourisme GGD85" />
+  <title>Cellule Secourisme GGD85 — Aide au Formateur</title>
+  <link id="dynamic-favicon" rel="icon" type="image/png" />
+  <link id="dynamic-apple-icon" rel="apple-touch-icon" />
+  <link id="dynamic-manifest" rel="manifest" />
+  <style>
+    :root {
+      --bg-app: #090D16;
+      --bg-surface: #111827;
+      --bg-card: #161F30;
+      --bg-card-hover: #1D283D;
+      --bg-input: #0D1320;
+      --border: #26334D;
+      --border-light: #334366;
+      --navy: #0B1E3D;
+      --navy-accent: #1E3A8A;
+      --blue: #3B82F6;
+      --blue-soft: rgba(59, 130, 246, 0.16);
+      --gold: #EAB308;
+      --gold-soft: rgba(234, 179, 8, 0.16);
+      --red: #EF4444;
+      --red-dark: #DC2626;
+      --red-soft: rgba(239, 68, 68, 0.16);
+      --green: #22C55E;
+      --green-soft: rgba(34, 197, 94, 0.16);
+      --amber: #F59E0B;
+      --amber-soft: rgba(245, 158, 11, 0.16);
+      --text: #F8FAFC;
+      --text-muted: #94A3B8;
+      --text-dim: #64748B;
+      --radius: 14px;
+      --radius-sm: 9px;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.45);
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg-app);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.45;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: linear-gradient(135deg, #09172E 0%, #10284E 100%);
+      border-bottom: 1px solid rgba(234, 179, 8, 0.28);
+      padding: 10px 14px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+    .header-inner {
+      max-width: 1060px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      min-width: 0;
+    }
+    .rondache-box {
+      width: 52px;
+      height: 52px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      overflow: hidden;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.55);
+      background: #161616;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .rondache-box svg, .rondache-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .brand-text { min-width: 0; }
+    .brand-kicker {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: var(--gold);
+      text-transform: uppercase;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .brand-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #FFFFFF;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .brand-sub {
+      font-size: 12px;
+      color: #CBD5E1;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .sync-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid var(--border-light);
+      color: var(--text-muted);
+    }
+    .sync-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--amber);
+    }
+    .sync-pill.online .sync-dot { background: var(--green); box-shadow: 0 0 8px var(--green); }
+    .sync-pill.online { color: #86EFAC; border-color: rgba(34, 197, 94, 0.35); }
+    .sync-pill.error .sync-dot { background: var(--red); }
+    .sync-pill.error { color: #FCA5A5; border-color: rgba(239, 68, 68, 0.35); }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-shrink: 0;
+    }
+
+    /* Desktop Top Nav */
+    .desktop-nav {
+      display: none;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      padding: 6px 14px;
+    }
+    .desktop-nav-inner {
+      max-width: 1060px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    @media (min-width: 768px) {
+      .desktop-nav { display: block; }
+      .mobile-nav { display: none !important; }
+      .main-container { padding-bottom: 32px !important; }
+    }
+
+    /* Mobile Bottom Nav */
+    .mobile-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 45;
+      background: rgba(13, 19, 32, 0.96);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+      gap: 4px;
+    }
+    .nav-btn {
+      position: relative;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      border-radius: 11px;
+      padding: 7px 4px;
+      font-size: 11.5px;
+      font-weight: 700;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: all 0.16s ease;
+    }
+    .desktop-nav .nav-btn {
+      flex-direction: row;
+      padding: 10px 12px;
+      font-size: 13.5px;
+      gap: 8px;
+    }
+    .nav-btn.active {
+      background: rgba(30, 58, 138, 0.45);
+      border-color: rgba(59, 130, 246, 0.45);
+      color: #FFFFFF;
+    }
+    .nav-badge {
+      position: absolute;
+      top: 4px;
+      right: 14px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .desktop-nav .nav-badge { position: static; }
+    .badge-red { background: var(--red); color: #fff; }
+    .badge-green { background: var(--green); color: #052e16; animation: pulse 1.8s infinite; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.65; }
+    }
+
+    /* Main Layout */
+    .main-container {
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: 16px 14px 92px;
+    }
+    .page-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .page-title {
+      margin: 0;
+      font-size: 21px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+    .page-desc {
+      margin: 3px 0 0;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 9px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-light);
+      background: var(--bg-card);
+      color: var(--text);
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+    .btn:hover { background: var(--bg-card-hover); }
+    .btn:active { transform: scale(0.98); }
+    .btn-sm { padding: 6px 10px; font-size: 12px; border-radius: 8px; }
+    .btn-primary { background: var(--navy-accent); border-color: #3B82F6; color: #fff; }
+    .btn-primary:hover { background: #254EDB; }
+    .btn-danger { background: var(--red-dark); border-color: #F87171; color: #fff; }
+    .btn-danger:hover { background: #B91C1C; }
+    .btn-success { background: #15803D; border-color: #4ADE80; color: #fff; }
+    .btn-success:hover { background: #166534; }
+    .btn-amber { background: #B45309; border-color: #FBBF24; color: #fff; }
+    .btn-ghost { background: transparent; border-color: var(--border); color: var(--text-muted); }
+
+    /* Cards & Accordions */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 15px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
+    }
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px;
+      margin-bottom: 14px;
+    }
+    .chip {
+      padding: 7px 13px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-muted);
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .chip.active {
+      background: var(--navy-accent);
+      border-color: var(--blue);
+      color: #fff;
+    }
+    .chip.chip-alert.active {
+      background: var(--red-dark);
+      border-color: #FCA5A5;
+      color: #fff;
+    }
+
+    /* Master Lots & Sub-lots */
+    .master-lot {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+    .master-header {
+      width: 100%;
+      background: linear-gradient(90deg, rgba(11,30,61,0.9), rgba(22,31,48,0.95));
+      border: none;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      padding: 14px 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      cursor: pointer;
+      text-align: left;
+    }
+    .master-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .sector-pill {
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      background: var(--blue-soft);
+      color: #93C5FD;
+      border: 1px solid rgba(59, 130, 246, 0.35);
+    }
+    .master-name { font-size: 17px; font-weight: 800; }
+    .master-body { padding: 12px; }
+    .sublot-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    @media (min-width: 720px) {
+      .sublot-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .sublot-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 13px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .sublot-card.has-alert { border-color: rgba(239, 68, 68, 0.55); }
+    .sublot-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .sublot-title { font-size: 15.5px; font-weight: 800; margin: 0; }
+    .status-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .status-badge {
+      padding: 4px 9px;
+      border-radius: 7px;
+      font-size: 11.5px;
+      font-weight: 800;
+      cursor: pointer;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .st-ready { background: var(--green-soft); color: #86EFAC; border-color: rgba(34, 197, 94, 0.35); }
+    .st-incomplete { background: var(--red-soft); color: #FCA5A5; border-color: rgba(239, 68, 68, 0.4); }
+    .st-avail { background: var(--blue-soft); color: #93C5FD; border-color: rgba(59, 130, 246, 0.35); }
+    .st-reserved { background: var(--amber-soft); color: #FCD34D; border-color: rgba(245, 158, 11, 0.4); }
+    .alert-box {
+      background: rgba(239, 68, 68, 0.11);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 12px;
+      color: #FECACA;
+    }
+    .alert-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 3px 0;
+    }
+    .sublot-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding-top: 6px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* Pedagogy Sub-tabs (Zero overlap 3-col grid) */
+    .ped-subtabs {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 5px;
+      margin-bottom: 16px;
+    }
+    .ped-subtab {
+      min-width: 0;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      border-radius: 9px;
+      padding: 9px 6px;
+      font-size: 12.5px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      text-align: center;
+      line-height: 1.2;
+      word-break: break-word;
+    }
+    .ped-subtab.active {
+      background: var(--navy-accent);
+      border-color: var(--blue);
+      color: #fff;
+    }
+    .inline-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: 999px;
+      font-size: 10.5px;
+      font-weight: 800;
+      background: rgba(255,255,255,0.16);
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    /* Sticky Chrono in Conduite MES */
+    .chrono-sticky {
+      position: sticky;
+      top: 72px;
+      z-index: 30;
+      background: linear-gradient(135deg, #0D1E3A 0%, #16233B 100%);
+      border: 1px solid rgba(59, 130, 246, 0.45);
+      border-radius: var(--radius);
+      padding: 13px;
+      margin-bottom: 14px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.45);
+    }
+    .chrono-display {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      color: #FFFFFF;
+    }
+    .chrono-display.running { color: #4ADE80; }
+    .top-chrono-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .top-btn {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--border-light);
+      color: #E2E8F0;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .top-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+    /* Forms */
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+    input[type="text"], input[type="email"], input[type="password"], input[type="url"], select, textarea {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-light);
+      color: var(--text);
+      border-radius: var(--radius-sm);
+      padding: 10px 11px;
+      font-size: 14px;
+      font-family: inherit;
+      margin-bottom: 11px;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+    textarea { min-height: 76px; resize: vertical; }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    @media (min-width: 640px) {
+      .grid-2 { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      background: rgba(3, 7, 18, 0.78);
+      backdrop-filter: blur(5px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+    }
+    .modal-box {
+      width: 100%;
+      max-width: 540px;
+      max-height: 88vh;
+      overflow-y: auto;
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.65);
+    }
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-title { margin: 0; font-size: 17px; font-weight: 800; }
+
+    /* Auth Gate (Supabase Login) */
+    .auth-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: radial-gradient(circle at top, #10284E 0%, #090D16 72%);
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--bg-card);
+      border: 1px solid rgba(234, 179, 8, 0.35);
+      border-radius: 18px;
+      padding: 24px 20px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.65);
+    }
+    .auth-logo {
+      width: 96px;
+      height: 96px;
+      margin: 0 auto 12px;
+      border-radius: 50%;
+      overflow: hidden;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.55);
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 78px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 95;
+      background: #1E293B;
+      border: 1px solid var(--blue);
+      color: #fff;
+      padding: 9px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      pointer-events: none;
+    }
+    .hidden { display: none !important; }
+    .muted { color: var(--text-muted); font-size: 12.5px; }
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(148, 163, 184, 0.14);
+      color: #CBD5E1;
+    }
+  </style>
+</head>
+<body>
+  <div id="app-root"></div>
+  <div id="modal-root"></div>
+  <div id="toast-box" class="toast hidden"></div>
+
+  <!-- Client officiel Supabase JS v2 (avec repli hors-ligne automatique si indisponible) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      /* =====================================================================
+         1. CONFIGURATION SUPABASE PRÉ-RENSEIGNÉE (CLÉ PUBLIQUE UNIQUEMENT)
+         ===================================================================== */
+      var DEFAULT_SUPABASE_CONFIG = {
+        url: "https://netekovsujfmozihawjc.supabase.co",
+        anonKey: "sb_publishable_N90rr5ll-Ds9HhVM9TR3ow_ff-tEVxy"
+      };
+
+      var STORAGE_KEY = "ggd85_secourisme_supabase_v1";
+      var SB_CFG_KEY = "ggd85_supabase_cfg_v1";
+      var OFFLINE_MODE_KEY = "ggd85_offline_bypass_v1";
+
+      /* =====================================================================
+         2. RONDACHE OFFICIELLE GGD85 (SVG HAUTE PRÉCISION FIDÈLE À LA PHOTO)
+         ===================================================================== */
+      var RONDACHE_SVG = [
+        '<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" aria-label="Rondache Cellule Secourisme GGD85">',
+        '  <defs>',
+        '    <clipPath id="inner-disc"><circle cx="150" cy="150" r="103"/></clipPath>',
+        '    <linearGradient id="silver-grad" x1="0%" y1="0%" x2="100%" y2="100%">',
+        '      <stop offset="0%" stop-color="#E5E7EB"/>',
+        '      <stop offset="50%" stop-color="#B8BEC7"/>',
+        '      <stop offset="100%" stop-color="#8C939E"/>',
+        '    </linearGradient>',
+        '    <path id="arc-top" d="M 38,150 A 112,112 0 1,1 262,150"/>',
+        '    <path id="arc-bot" d="M 31,152 A 119,119 0 0,0 269,152"/>',
+        '  </defs>',
+        '  <!-- Couronne extérieure noire à double filet -->',
+        '  <circle cx="150" cy="150" r="148" fill="#18181B" stroke="#27272A" stroke-width="2"/>',
+        '  <circle cx="150" cy="150" r="142" fill="none" stroke="#3F3F46" stroke-width="1.3"/>',
+        '  <circle cx="150" cy="150" r="105" fill="#18181B" stroke="#3F3F46" stroke-width="1.5"/>',
+        '  <!-- Textes courbés -->',
+        '  <text fill="#F8FAFC" font-family="Arial Black, Impact, sans-serif" font-size="20.5" font-weight="900" letter-spacing="1.2">',
+        '    <textPath href="#arc-top" startOffset="50%" text-anchor="middle">GENDARMERIE NATIONALE</textPath>',
+        '  </text>',
+        '  <text fill="#F8FAFC" font-family="Arial Black, Impact, sans-serif" font-size="18.5" font-weight="900" letter-spacing="1">',
+        '    <textPath href="#arc-bot" startOffset="50%" text-anchor="middle">CELLULE SECOURISME GGD85</textPath>',
+        '  </text>',
+        '  <!-- Grenades blanches latérales à 9h et 3h -->',
+        '  <g fill="#F8FAFC">',
+        '    <ellipse cx="26" cy="158" rx="4.5" ry="5.5"/>',
+        '    <path d="M26,151 C22,145 19,141 20,136 C22,139 24,142 25,144 C24,138 23,133 26,129 C29,133 28,138 27,144 C28,142 30,139 32,136 C33,141 30,145 26,151 Z"/>',
+        '    <ellipse cx="274" cy="158" rx="4.5" ry="5.5"/>',
+        '    <path d="M274,151 C270,145 267,141 268,136 C270,139 272,142 273,144 C272,138 271,133 274,129 C277,133 276,138 275,144 C276,142 278,139 280,136 C281,141 278,145 274,151 Z"/>',
+        '  </g>',
+        '  <!-- Disque central illustré -->',
+        '  <g clip-path="url(#inner-disc)">',
+        '    <!-- Ciel bleu clair -->',
+        '    <rect x="45" y="45" width="210" height="210" fill="#82C2E6"/>',
+        '    <line x1="45" y1="108" x2="255" y2="108" stroke="#1E293B" stroke-width="1"/>',
+        '    <!-- Bocage vendéen à gauche -->',
+        '    <path d="M45,138 Q95,134 148,145 L148,255 L45,255 Z" fill="#65A30D" stroke="#1E293B" stroke-width="1.3"/>',
+        '    <path d="M45,165 Q88,158 128,175 Q95,192 45,195 Z" fill="#84CC16" stroke="#1E293B" stroke-width="1"/>',
+        '    <path d="M45,198 Q82,194 125,215 L125,255 L45,255 Z" fill="#22C55E" stroke="#1E293B" stroke-width="1.2"/>',
+        '    <!-- Chemin ocre -->',
+        '    <path d="M88,242 Q108,225 130,214 L137,221 Q115,233 98,249 Z" fill="#EAB308" stroke="#1E293B" stroke-width="1"/>',
+        '    <!-- Château fort à gauche -->',
+        '    <g fill="#B4B8BF" stroke="#1E293B" stroke-width="1.2">',
+        '      <path d="M52,140 L63,124 L85,124 L94,140 Z" fill="#9CA3AF"/>',
+        '      <rect x="57" y="109" width="8" height="17"/>',
+        '      <rect x="65" y="114" width="10" height="12"/>',
+        '      <rect x="75" y="107" width="8" height="19"/>',
+        '    </g>',
+        '    <!-- Lion silhouette -->',
+        '    <ellipse cx="105" cy="147" rx="6" ry="3" fill="#1E293B"/>',
+        '    <circle cx="111" cy="145" r="2.5" fill="#1E293B"/>',
+        '    <!-- Mer océan à droite -->',
+        '    <path d="M148,136 L255,136 L255,255 L148,255 Z" fill="#2563EB" stroke="#1E293B" stroke-width="1.3"/>',
+        '    <path d="M168,214 Q190,196 212,212 Q226,220 242,208" fill="none" stroke="#BAE6FD" stroke-width="2.5" stroke-linecap="round"/>',
+        '    <path d="M162,226 Q188,212 208,226 Q224,234 238,222" fill="none" stroke="#E0F2FE" stroke-width="2" stroke-linecap="round"/>',
+        '    <!-- Phare et voilier -->',
+        '    <g stroke="#1E293B" stroke-width="1.2">',
+        '      <polygon points="233,134 236,110 241,110 244,134" fill="#E2E8F0"/>',
+        '      <rect x="235" y="105" width="7" height="5" fill="#EF4444"/>',
+        '      <polygon points="203,154 203,127 219,154" fill="#F8FAFC"/>',
+        '      <polygon points="201,154 201,132 189,154" fill="#E2E8F0"/>',
+        '      <path d="M187,156 L221,156 L216,162 L192,162 Z" fill="#CBD5E1"/>',
+        '    </g>',
+        '    <!-- Fontaine en pierre en bas au centre -->',
+        '    <g stroke="#1E293B" stroke-width="1.2">',
+        '      <rect x="125" y="232" width="50" height="18" fill="#D97706"/>',
+        '      <path d="M136,246 L136,216 A14,14 0 0,1 164,216 L164,246 Z" fill="#D97706"/>',
+        '      <path d="M141,246 L141,218 A9,9 0 0,1 159,218 L159,246 Z" fill="#60A5FA"/>',
+        '      <rect x="134" y="244" width="32" height="7" rx="2" fill="#CBD5E1"/>',
+        '    </g>',
+        '    <!-- Emblème métallique argenté -->',
+        '    <g fill="url(#silver-grad)" stroke="#1E293B" stroke-width="1.6" stroke-linejoin="round">',
+        '      <!-- Anneau ovale -->',
+        '      <path d="M84,158 C84,114 216,114 216,158 C216,196 184,212 150,212 C116,212 84,196 84,158 Z M94,158 C94,188 122,202 150,202 C178,202 206,188 206,158 C206,124 94,124 94,158 Z"/>',
+        '      <!-- Masse et épée croisées -->',
+        '      <polygon points="103,115 113,107 195,184 187,192"/>',
+        '      <circle cx="106" cy="110" r="9"/>',
+        '      <polygon points="196,115 188,107 105,184 113,192"/>',
+        '      <rect x="184" y="109" width="22" height="6" rx="2" transform="rotate(42 195 112)"/>',
+        '      <!-- Triangle évidé -->',
+        '      <polygon points="150,104 102,188 198,188"/>',
+        '      <polygon points="150,127 122,176 178,176" fill="#82C2E6"/>',
+        '      <!-- Lauriers et poignée de main -->',
+        '      <path d="M72,162 C78,194 108,212 138,216 L142,206 C116,202 92,186 84,160 Z"/>',
+        '      <path d="M228,162 C222,194 192,212 162,216 L158,206 C184,202 208,186 216,160 Z"/>',
+        '      <rect x="131" y="195" width="38" height="20" rx="9"/>',
+        '      <!-- Grande grenade centrale -->',
+        '      <ellipse cx="150" cy="183" rx="11" ry="13"/>',
+        '      <path d="M150,170 C138,158 131,146 135,134 C140,141 144,148 146,154 C143,139 143,124 150,113 C157,124 157,139 154,154 C156,148 160,141 165,134 C169,146 162,158 150,170 Z"/>',
+        '    </g>',
+        '    <!-- Double cœur vendéen couronné -->',
+        '    <g stroke="#1E293B" stroke-width="1.5" stroke-linejoin="round">',
+        '      <path d="M144,108 L128,93 A11,11 0 0,1 144,78 A11,11 0 0,1 160,93 Z" fill="#DC2626"/>',
+        '      <path d="M144,101 L133,91 A7,7 0 0,1 144,82 A7,7 0 0,1 155,91 Z" fill="#9CA3AF"/>',
+        '      <path d="M156,108 L140,93 A11,11 0 0,1 156,78 A11,11 0 0,1 172,93 Z" fill="#DC2626"/>',
+        '      <path d="M156,101 L145,91 A7,7 0 0,1 156,82 A7,7 0 0,1 167,91 Z" fill="#9CA3AF"/>',
+        '      <!-- Couronne et croix -->',
+        '      <polygon points="139,74 136,61 144,66 150,59 156,66 164,61 161,74" fill="#DC2626"/>',
+        '      <path d="M148,59 L148,53 L144,53 L144,49 L148,49 L148,45 L152,45 L152,49 L156,49 L156,53 L152,53 L152,59 Z" fill="#DC2626"/>',
+        '    </g>',
+        '  </g>',
+        '</svg>'
+      ].join("");
+
+      /* =====================================================================
+         3. DONNÉES INITIALES (LOTS, SITES, SCÉNARIOS, ÉTAPES CHRONO)
+         ===================================================================== */
+      function createDefaultSharedData() {
+        return {
+          updatedAt: new Date().toISOString(),
+          updatedBy: "Cellule GGD85",
+          masterLots: [
+            {
+              id: "lot-lrsy",
+              name: "Lot LRSY",
+              sector: "LRSY",
+              expanded: true,
+              sublots: [
+                {
+                  id: "lrsy-psc",
+                  name: "Lot PSC",
+                  ready: true,
+                  reserved: false,
+                  reservedBy: "",
+                  reservedDates: "",
+                  items: [
+                    { id: "i1", name: "Mannequin adulte QCPR", qty: 3, ok: true },
+                    { id: "i2", name: "Mannequin enfant", qty: 2, ok: true },
+                    { id: "i3", name: "Mannequin nourrisson", qty: 2, ok: true },
+                    { id: "i4", name: "DAE de formation + électrodes", qty: 3, ok: true },
+                    { id: "i5", name: "Tapis de sol & lingettes", qty: 6, ok: true }
+                  ]
+                },
+                {
+                  id: "lrsy-stgn1",
+                  name: "Lot STGN1",
+                  ready: true,
+                  reserved: false,
+                  reservedBy: "",
+                  reservedDates: "",
+                  items: [
+                    { id: "s1", name: "Garrots tourniquets entraînement", qty: 6, ok: true },
+                    { id: "s2", name: "Pansements compressifs type CHUT", qty: 6, ok: true },
+                    { id: "s3", name: "Plaies hémorragiques de simulation", qty: 4, ok: true },
+                    { id: "s4", name: "Couvertures de survie & ciseaux", qty: 6, ok: true }
+                  ]
+                },
+                {
+                  id: "lrsy-mes",
+                  name: "Lot MES et accessoires",
+                  ready: true,
+                  reserved: false,
+                  reservedBy: "",
+                  reservedDates: "",
+                  items: [
+                    { id: "m1", name: "Kit maquillage & faux sang", qty: 1, ok: true },
+                    { id: "m2", name: "Accessoires mise en scène (armes factices, outils)", qty: 1, ok: true },
+                    { id: "m3", name: "Gilets haute visibilité & balisage", qty: 4, ok: true }
+                  ]
+                },
+                {
+                  id: "lrsy-popote",
+                  name: "Popote",
+                  ready: true,
+                  reserved: false,
+                  reservedBy: "",
+                  reservedDates: "",
+                  items: [
+                    { id: "p1", name: "Cafetière / Bouilloire", qty: 1, ok: true },
+                    { id: "p2", name: "Gobelets, café, thé, sucre", qty: 1, ok: true }
+                  ]
+                }
+              ]
+            },
+            {
+              id: "lot-lucon",
+              name: "Lot Luçon",
+              sector: "LUÇON",
+              expanded: true,
+              sublots: [
+                {
+                  id: "luc-psc",
+                  name: "Lot PSC",
+                  ready: true,
+                  reserved: false,
+                  reservedBy: "",
+                  reservedDates: "",
+                  items: [
+                    { id: "lp1", name: "Mannequin adulte QCPR", qty: 3, ok: true },
+                    { id: "lp2", name: "Mannequin enfant", qty: 2, ok: true },
+                    { id: "lp3", name: "Mannequin nourrisson", qty: 2, ok: true },
+                    { id: "lp4", name: "DAE de formation + électrodes", qty: 3, ok: true }
+                  ]
+                },
+                {
+                  id: "luc-stgn1",
+                  name: "Lot STGN1",
+                  ready: true,
+                  reserved: false,
+                  reservedBy: "",
+                  reservedDates: "",
+                  items: [
+                    { id: "ls1", name: "Garrots tourniquets entraînement", qty: 6, ok: true },
+                    { id: "ls2", name: "Pansements compressifs entraînement", qty: 6, ok: true },
+                    { id: "ls3", name: "Couvertures de survie", qty: 6, ok: true }
+                  ]
+                },
+                {
+                  id: "luc-mes",
+                  name: "Lot MES et accessoires",
+                  ready: true,
+                  reserved: false,
+                  reservedBy: "",
+                  reservedDates: "",
+                  items: [
+                    { id: "lm1", name: "Kit maquillage & faux sang", qty: 1, ok: true },
+                    { id: "lm2", name: "Accessoires mise en scène", qty: 1, ok: true }
+                  ]
+                },
+                {
+                  id: "luc-popote",
+                  name: "Popote",
+                  ready: true,
+                  reserved: false,
+                  reservedBy: "",
+                  reservedDates: "",
+                  items: [
+                    { id: "lpo1", name: "Cafetière / Bouilloire", qty: 1, ok: true },
+                    { id: "lpo2", name: "Consommables café / gobelets", qty: 1, ok: true }
+                  ]
+                }
+              ]
+            },
+            {
+              id: "lot-reserve",
+              name: "Lot Réserve",
+              sector: "RÉSERVE",
+              expanded: true,
+              comingSoon: true,
+              sublots: []
+            }
+          ],
+          alerts: [],
+          /* Note : aucun code d'accès sensible n'est stocké dans l'application web */
+          sites: [
+            {
+              id: "site-ggd85",
+              name: "GGD85 (La Roche-sur-Yon)",
+              keys: "Récupération des clés au poste / accueil GGD85",
+              location: "Salle APL — Zone familles",
+              storage: "Stockage matériel : WC de gauche",
+              notes: "Vérifier l'accès portillon auprès du poste avant le début de la session."
+            },
+            {
+              id: "site-egm-lucon",
+              name: "EGM Luçon",
+              keys: "Clés auprès du planton / cadre de permanence EGM",
+              location: "Salle d'instruction RDC gauche du bâtiment EGM ou cercle mixte",
+              storage: "Stockage dans la pièce située au fond de la salle d'instruction",
+              notes: "Prévoir installation tables/chaises la veille si session STGN1."
+            },
+            {
+              id: "site-cie-lso",
+              name: "CIE LSO (Les Sables-d'Olonne)",
+              keys: "Accueil Compagnie LSO",
+              location: "Salle de réunion — Étage bâtiment BR / PSIG",
+              storage: "Stockage matériel directement dans la salle",
+              notes: "Stationnement véhicule cellule dans la cour intérieure."
+            },
+            {
+              id: "site-sjdm",
+              name: "SJDM (Saint-Jean-de-Monts)",
+              keys: "Consignes d'ouverture communiquées par le référent local",
+              location: "Serres municipales — Salle de réunion bâtiment au fond à droite",
+              storage: "Stockage matériel dans les sanitaires",
+              notes: "Penser à vérifier la fermeture des accès en fin de journée."
+            }
+          ]
+        };
+      }
+
+      function createDefaultLocalData() {
+        return {
+          activeTab: "lots",
+          pedSubTab: "session",
+          lotFilterSector: "ALL",
+          lotFilterAlertsOnly: false,
+          customLogoDataUrl: "",
+          session: {
+            courseType: "PSC",
+            trinomeEnabled: false,
+            learners: []
+          },
+          scenarios: [
+            { id: "sc1", title: "Arrêt cardiaque sur voie publique", course: "PSC", formats: ["Solo", "Binôme"], context: "Victime inconsciente qui ne respire pas devant un commerce. Témoin présent et DAE à proximité." },
+            { id: "sc2", title: "Obstruction totale des voies aériennes (adulte)", course: "PSC", formats: ["Solo", "Binôme"], context: "Collègue en pause déjeuner qui porte les mains à sa gorge, aucun son ne sort." },
+            { id: "sc3", title: "Hémorragie externe membre inférieur (outil)", course: "PSC", formats: ["Solo", "Binôme"], context: "Blessure profonde au mollet avec saignement abondant lors d'un bricolage." },
+            { id: "sc4", title: "Perte de connaissance (PLS) post-malaise", course: "PSC", formats: ["Solo", "Binôme"], context: "Personne allongée au sol, inconsciente mais ventilation régulière." },
+            { id: "sc5", title: "Brûlure thermique étendue avant-bras", course: "PSC", formats: ["Solo"], context: "Projection d'eau bouillante en cuisine, victime algique et agitée." },
+            { id: "sc6", title: "Plaie hémorragique par arme blanche — Pose de garrot", course: "STGN1", formats: ["Binôme", "Trinôme"], context: "Intervention sur rixe, victime présentant un saignement artériel fémoral actif. Zone sécurisée." },
+            { id: "sc7", title: "Traumatisme thoracique & mise à l'abri", course: "STGN1", formats: ["Binôme", "Trinôme"], context: "Camarade touché lors d'une progression, détresse respiratoire, extraction et bilan." },
+            { id: "sc8", title: "Blessé multiple (triage rapide & garrot + PLS)", course: "STGN1", formats: ["Binôme", "Trinôme"], context: "Accident de circulation impliquant deux victimes : une hémorragie grave et une perte de connaissance." },
+            { id: "sc9", title: "Arrêt cardio-respiratoire en binôme avec relais", course: "STGN1", formats: ["Binôme", "Trinôme"], context: "Malaise grave d'un personnel en service, RCP à deux sauveteurs et mise en œuvre DAE." },
+            { id: "sc10", title: "Hypothermie & traumatisme membre supérieur", course: "STGN1", formats: ["Binôme", "Trinôme"], context: "Recherche de personne disparue en zone humide, victime retrouvée consciente, frigorifiée avec fracture clavicule." }
+          ],
+          keySteps: [
+            { id: "ks1", label: "Sécurisation zone" },
+            { id: "ks2", label: "Bilan conscience / respi" },
+            { id: "ks3", label: "Alerte passée" },
+            { id: "ks4", label: "Garrot / Compression" },
+            { id: "ks5", label: "Début RCP" },
+            { id: "ks6", label: "Pose DAE / Choc" },
+            { id: "ks7", label: "Mise en PLS" },
+            { id: "ks8", label: "Surveillance & couverture" }
+          ],
+          activeMesList: [],
+          selectedMesId: null,
+          mesHistory: []
+        };
+      }
+
+      /* =====================================================================
+         4. ÉTAT GLOBAL & CLIENT SUPABASE
+         ===================================================================== */
+      var supabaseConfig = loadSupabaseConfig();
+      var supabaseClient = null;
+      var realtimeChannel = null;
+      var currentUser = null;
+      var offlineBypass = false;
+      var syncStatus = "offline"; // "online" | "syncing" | "offline" | "error"
+      var syncErrorMessage = "";
+      var saveDebounceTimer = null;
+
+      var sharedState = createDefaultSharedData();
+      var localState = loadLocalState();
+
+      function loadSupabaseConfig() {
+        try {
+          var raw = localStorage.getItem(SB_CFG_KEY);
+          if (raw) {
+            var parsed = JSON.parse(raw);
+            if (parsed && parsed.url && parsed.anonKey) return parsed;
+          }
+        } catch (e) {}
+        return { url: DEFAULT_SUPABASE_CONFIG.url, anonKey: DEFAULT_SUPABASE_CONFIG.anonKey };
+      }
+
+      function saveSupabaseConfig(cfg) {
+        supabaseConfig = {
+          url: (cfg.url || "").trim() || DEFAULT_SUPABASE_CONFIG.url,
+          anonKey: (cfg.anonKey || "").trim() || DEFAULT_SUPABASE_CONFIG.anonKey
+        };
+        try {
+          localStorage.setItem(SB_CFG_KEY, JSON.stringify(supabaseConfig));
+        } catch (e) {}
+      }
+
+      function loadLocalState() {
+        var def = createDefaultLocalData();
+        try {
+          offlineBypass = localStorage.getItem(OFFLINE_MODE_KEY) === "1";
+          var raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return def;
+          var parsed = JSON.parse(raw);
+          if (parsed.sharedFallback) {
+            sharedState = Object.assign(createDefaultSharedData(), parsed.sharedFallback);
+          }
+          if (parsed.local) {
+            return Object.assign(def, parsed.local);
+          }
+        } catch (e) {}
+        return def;
+      }
+
+      function persistLocalOnly() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            local: localState,
+            sharedFallback: sharedState
+          }));
+        } catch (e) {}
+      }
+
+      function isSupabaseConfigured() {
+        return Boolean(
+          window.supabase &&
+          supabaseConfig.url &&
+          supabaseConfig.url.indexOf("https://") === 0 &&
+          supabaseConfig.anonKey &&
+          supabaseConfig.anonKey.length > 15
+        );
+      }
+
+      function initSupabaseClient() {
+        if (!isSupabaseConfigured()) {
+          supabaseClient = null;
+          syncStatus = "offline";
+          return false;
+        }
+        try {
+          supabaseClient = window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey);
+          return true;
+        } catch (e) {
+          supabaseClient = null;
+          syncStatus = "error";
+          syncErrorMessage = e.message || "Erreur initialisation Supabase";
+          return false;
+        }
+      }
+
+      async function pushSharedStateToSupabase() {
+        persistLocalOnly();
+        if (!supabaseClient || !currentUser) return;
+        syncStatus = "syncing";
+        updateSyncBadgeUI();
+
+        var author = (currentUser.user_metadata && currentUser.user_metadata.full_name) || currentUser.email || "Formateur";
+        sharedState.updatedAt = new Date().toISOString();
+        sharedState.updatedBy = author;
+
+        try {
+          var res = await supabaseClient
+            .from("cellule_etat")
+            .upsert({
+              id: "ggd85_main",
+              data: sharedState,
+              updated_at: sharedState.updatedAt,
+              updated_by: author
+            }, { onConflict: "id" });
+
+          if (res.error) throw res.error;
+          syncStatus = "online";
+          syncErrorMessage = "";
+        } catch (err) {
+          syncStatus = "error";
+          syncErrorMessage = err.message || "Échec synchro";
+        }
+        updateSyncBadgeUI();
+      }
+
+      function scheduleSharedSync() {
+        persistLocalOnly();
+        if (saveDebounceTimer) clearTimeout(saveDebounceTimer);
+        saveDebounceTimer = setTimeout(function () {
+          pushSharedStateToSupabase();
+        }, 350);
+      }
+
+      async function pullAndSubscribeSupabase() {
+        if (!supabaseClient || !currentUser) return;
+        syncStatus = "syncing";
+        updateSyncBadgeUI();
+
+        try {
+          var res = await supabaseClient
+            .from("cellule_etat")
+            .select("*")
+            .eq("id", "ggd85_main")
+            .maybeSingle();
+
+          if (res.error) throw res.error;
+
+          if (res.data && res.data.data) {
+            sharedState = Object.assign(createDefaultSharedData(), res.data.data);
+            persistLocalOnly();
+          } else {
+            await pushSharedStateToSupabase();
+          }
+
+          if (realtimeChannel) {
+            supabaseClient.removeChannel(realtimeChannel);
+          }
+
+          realtimeChannel = supabaseClient
+            .channel("ggd85-cellule-realtime")
+            .on(
+              "postgres_changes",
+              { event: "*", schema: "public", table: "cellule_etat", filter: "id=eq.ggd85_main" },
+              function (payload) {
+                if (payload.new && payload.new.data) {
+                  sharedState = Object.assign(createDefaultSharedData(), payload.new.data);
+                  persistLocalOnly();
+                  syncStatus = "online";
+                  renderApp();
+                  showToast("Mise à jour reçue (" + escapeHtml(payload.new.updated_by || "Cellule") + ")");
+                }
+              }
+            )
+            .subscribe(function (status) {
+              if (status === "SUBSCRIBED") {
+                syncStatus = "online";
+                updateSyncBadgeUI();
+              }
+            });
+
+          syncStatus = "online";
+          syncErrorMessage = "";
+          renderApp();
+        } catch (err) {
+          syncStatus = "error";
+          syncErrorMessage = err.message || "Table cellule_etat inaccessible";
+          renderApp();
+        }
+      }
+
+      function updateSyncBadgeUI() {
+        var pill = document.getElementById("header-sync-pill");
+        if (!pill) return;
+        pill.className = "sync-pill " + (syncStatus === "online" ? "online" : syncStatus === "error" ? "error" : "");
+        var label = syncStatus === "online"
+          ? "Synchronisé"
+          : syncStatus === "syncing"
+          ? "Synchro..."
+          : syncStatus === "error"
+          ? "Erreur synchro"
+          : "Mode local";
+        pill.innerHTML = '<span class="sync-dot"></span><span>' + label + "</span>";
+      }
+
+      /* =====================================================================
+         5. UTILITAIRES & PWA MANIFEST / ICÔNES
+         ===================================================================== */
+      function uid(prefix) {
+        return (prefix || "id") + "_" + Math.random().toString(36).slice(2, 9);
+      }
+
+      function escapeHtml(str) {
+        if (str === null || str === undefined) return "";
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function showToast(msg) {
+        var el = document.getElementById("toast-box");
+        if (!el) return;
+        el.textContent = msg;
+        el.classList.remove("hidden");
+        clearTimeout(el._t);
+        el._t = setTimeout(function () {
+          el.classList.add("hidden");
+        }, 2600);
+      }
+
+      function getLogoMarkup() {
+        if (localState.customLogoDataUrl) {
+          return '<img src="' + escapeHtml(localState.customLogoDataUrl) + '" alt="Rondache GGD85" />';
+        }
+        return RONDACHE_SVG;
+      }
+
+      function setupPwaAssets() {
+        try {
+          var svgBlob = new Blob([RONDACHE_SVG], { type: "image/svg+xml;charset=utf-8" });
+          var url = URL.createObjectURL(svgBlob);
+          var img = new Image();
+          img.onload = function () {
+            var canvas = document.createElement("canvas");
+            canvas.width = 512;
+            canvas.height = 512;
+            var ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, 512, 512);
+            var pngUrl = localState.customLogoDataUrl || canvas.toDataURL("image/png");
+            URL.revokeObjectURL(url);
+
+            var fav = document.getElementById("dynamic-favicon");
+            var apple = document.getElementById("dynamic-apple-icon");
+            if (fav) fav.href = pngUrl;
+            if (apple) apple.href = pngUrl;
+
+            var manifest = {
+              name: "Cellule Secourisme GGD85",
+              short_name: "Secourisme 85",
+              start_url: "./",
+              display: "standalone",
+              background_color: "#090D16",
+              theme_color: "#0B1E3D",
+              icons: [
+                { src: pngUrl, sizes: "192x192", type: "image/png" },
+                { src: pngUrl, sizes: "512x512", type: "image/png" }
+              ]
+            };
+            var mBlob = new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" });
+            var mEl = document.getElementById("dynamic-manifest");
+            if (mEl) mEl.href = URL.createObjectURL(mBlob);
+          };
+          img.src = url;
+        } catch (e) {}
+      }
+
+      /* =====================================================================
+         6. CHRONOMÈTRES MES (BASÉS SUR Date.now() SANS DÉRIVE)
+         ===================================================================== */
+      function getMesElapsedMs(mes) {
+        var base = mes.elapsedMs || 0;
+        if (mes.running && mes.startedAt) {
+          return base + (Date.now() - mes.startedAt);
+        }
+        return base;
+      }
+
+      function formatDuration(ms) {
+        var totalSec = Math.max(0, Math.floor(ms / 1000));
+        var mins = Math.floor(totalSec / 60);
+        var secs = totalSec % 60;
+        return (mins < 10 ? "0" : "") + mins + ":" + (secs < 10 ? "0" : "") + secs;
+      }
+
+      setInterval(function () {
+        var displays = document.querySelectorAll("[data-mes-timer]");
+        if (!displays.length) return;
+        for (var i = 0; i < displays.length; i++) {
+          var id = displays[i].getAttribute("data-mes-timer");
+          var mes = localState.activeMesList.find(function (m) { return m.id === id; });
+          if (mes) {
+            displays[i].textContent = formatDuration(getMesElapsedMs(mes));
+          }
+        }
+      }, 250);
+
+      /* =====================================================================
+         7. RENDU DE L'ÉCRAN D'AUTHENTIFICATION SUPABASE
+         ===================================================================== */
+      function renderAuthScreen() {
+        var root = document.getElementById("app-root");
+        var configured = isSupabaseConfigured();
+
+        root.innerHTML =
+          '<div class="auth-screen">' +
+          '  <div class="auth-card">' +
+          '    <div class="auth-logo">' + getLogoMarkup() + "</div>" +
+          '    <div style="text-align:center;margin-bottom:16px;">' +
+          '      <div class="brand-kicker">Gendarmerie Nationale • Vendée 85</div>' +
+          '      <h1 style="margin:4px 0;font-size:20px;font-weight:900;">Cellule Secourisme GGD85</h1>' +
+          '      <p class="muted" style="margin:0;">Espace Formateurs — Synchronisation sécurisée</p>' +
+          "    </div>" +
+          (configured
+            ? '<form id="supabase-login-form">' +
+              '  <label for="login-email">Adresse e-mail formateur</label>' +
+              '  <input type="email" id="login-email" required placeholder="prenom.nom@exemple.fr" autocomplete="email" />' +
+              '  <label for="login-pass">Mot de passe</label>' +
+              '  <input type="password" id="login-pass" required placeholder="••••••••" autocomplete="current-password" />' +
+              '  <div id="login-error" class="alert-box hidden" style="margin-bottom:10px;"></div>' +
+              '  <button type="submit" class="btn btn-primary" style="width:100%;padding:11px;">Se connecter</button>' +
+              "</form>"
+            : '<div class="alert-box" style="background:rgba(245,158,11,0.12);border-color:rgba(245,158,11,0.45);color:#FDE68A;margin-bottom:12px;">' +
+              "  <strong>Connexion Supabase non initialisée :</strong> vérifiez votre connexion réseau ou renseignez vos paramètres Supabase." +
+              "</div>" +
+              '<form id="supabase-quick-cfg-form">' +
+              '  <label for="cfg-sb-url">Project URL Supabase</label>' +
+              '  <input type="url" id="cfg-sb-url" required placeholder="https://xxxx.supabase.co" value="' + escapeHtml(supabaseConfig.url) + '" />' +
+              '  <label for="cfg-sb-key">Clé publique Supabase</label>' +
+              '  <input type="text" id="cfg-sb-key" required placeholder="sb_publishable_..." value="' + escapeHtml(supabaseConfig.anonKey) + '" />' +
+              '  <button type="submit" class="btn btn-primary" style="width:100%;">Enregistrer et continuer</button>' +
+              "</form>") +
+          '    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px;">' +
+          (configured
+            ? '<button type="button" class="btn btn-ghost btn-sm" data-action="open-sb-config-modal">Paramètres de connexion Supabase</button>'
+            : "") +
+          '      <button type="button" class="btn btn-ghost btn-sm" data-action="enter-offline-mode">Continuer en mode hors-ligne local</button>' +
+          "    </div>" +
+          "  </div>" +
+          "</div>";
+      }
+
+      /* =====================================================================
+         8. RENDU PRINCIPAL DE L'APPLICATION
+         ===================================================================== */
+      function renderApp() {
+        if (!currentUser && !offlineBypass) {
+          renderAuthScreen();
+          return;
+        }
+
+        var root = document.getElementById("app-root");
+        var activeAlertsCount = sharedState.alerts.length;
+        var runningMesCount = localState.activeMesList.filter(function (m) { return m.running; }).length;
+
+        var userLabel = currentUser
+          ? escapeHtml((currentUser.user_metadata && currentUser.user_metadata.full_name) || currentUser.email)
+          : "Mode local hors-ligne";
+
+        var html =
+          '<header class="app-header">' +
+          '  <div class="header-inner">' +
+          '    <div class="brand">' +
+          '      <div class="rondache-box">' + getLogoMarkup() + "</div>" +
+          '      <div class="brand-text">' +
+          '        <div class="brand-kicker">Gendarmerie Nationale • Vendée 85</div>' +
+          '        <div class="brand-title">Cellule Secourisme GGD85</div>' +
+          '        <div class="brand-sub">' +
+          '          <span id="header-sync-pill" class="sync-pill"><span class="sync-dot"></span><span>...</span></span>' +
+          "          <span>" + userLabel + "</span>" +
+          "        </div>" +
+          "      </div>" +
+          "    </div>" +
+          '    <div class="header-actions">' +
+          (currentUser
+            ? '<button type="button" class="btn btn-sm btn-ghost" data-action="sync-now" title="Forcer la synchronisation">Sync</button>' +
+              '<button type="button" class="btn btn-sm btn-ghost" data-action="logout" title="Se déconnecter">Quitter</button>'
+            : '<button type="button" class="btn btn-sm btn-primary" data-action="exit-offline-mode">Connexion</button>') +
+          "    </div>" +
+          "  </div>" +
+          "</header>" +
+
+          '<nav class="desktop-nav">' +
+          '  <div class="desktop-nav-inner">' +
+          renderNavButton("lots", "Lots & matériel", activeAlertsCount > 0 ? '<span class="nav-badge badge-red">' + activeAlertsCount + "</span>" : "") +
+          renderNavButton("sites", "Sites", "") +
+          renderNavButton("pedagogie", "Pédagogie", runningMesCount > 0 ? '<span class="nav-badge badge-green">' + runningMesCount + "</span>" : "") +
+          renderNavButton("parametres", "Paramètres", "") +
+          "  </div>" +
+          "</nav>" +
+
+          '<main class="main-container">' +
+          renderActiveTabContent() +
+          "</main>" +
+
+          '<nav class="mobile-nav">' +
+          renderNavButton("lots", "Lots", activeAlertsCount > 0 ? '<span class="nav-badge badge-red">' + activeAlertsCount + "</span>" : "") +
+          renderNavButton("sites", "Sites", "") +
+          renderNavButton("pedagogie", "Pédagogie", runningMesCount > 0 ? '<span class="nav-badge badge-green">' + runningMesCount + "</span>" : "") +
+          renderNavButton("parametres", "Paramètres", "") +
+          "</nav>";
+
+        root.innerHTML = html;
+        updateSyncBadgeUI();
+      }
+
+      function renderNavButton(tabId, label, badgeHtml) {
+        var active = localState.activeTab === tabId ? " active" : "";
+        return (
+          '<button type="button" class="nav-btn' + active + '" data-action="switch-tab" data-tab="' + tabId + '">' +
+          "  <span>" + label + "</span>" +
+          badgeHtml +
+          "</button>"
+        );
+      }
+
+      function renderActiveTabContent() {
+        if (localState.activeTab === "lots") return renderLotsTab();
+        if (localState.activeTab === "sites") return renderSitesTab();
+        if (localState.activeTab === "pedagogie") return renderPedagogieTab();
+        return renderParametresTab();
+      }
+
+      /* =====================================================================
+         9. ONGLET 1 : LOTS & MATÉRIEL (PAGE D'ACCUEIL ALLÉGÉE)
+         ===================================================================== */
+      function renderLotsTab() {
+        var alertsCount = sharedState.alerts.length;
+        var sectors = ["ALL", "LRSY", "LUÇON", "RÉSERVE"];
+
+        var html =
+          '<div class="page-head">' +
+          "  <div>" +
+          '    <h2 class="page-title">Lots & matériel</h2>' +
+          '    <p class="page-desc">État opérationnel, réservations, inventaires et signalements partagés.</p>' +
+          "  </div>" +
+          '  <button type="button" class="btn btn-danger" data-action="open-alert-modal">+ Signaler (Consommable / Casse)</button>' +
+          "</div>";
+
+        if (alertsCount > 0) {
+          html +=
+            '<div class="card" style="border-color:rgba(239,68,68,0.5);background:rgba(127,29,29,0.2);">' +
+            '  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;">' +
+            '    <strong style="color:#FCA5A5;">Alertes matériel en cours (' + alertsCount + ")</strong>" +
+            '    <span class="muted">Partagé cellule</span>' +
+            "  </div>";
+          sharedState.alerts.forEach(function (al) {
+            html +=
+              '<div class="alert-line" style="border-top:1px solid rgba(239,68,68,0.2);padding:6px 0;">' +
+              '  <div style="font-size:13px;">' +
+              '    <span class="tag" style="background:rgba(239,68,68,0.25);color:#FECACA;">' + escapeHtml(al.type) + "</span> " +
+              "    <strong>" + escapeHtml(al.lotLabel) + "</strong> — " + escapeHtml(al.detail) +
+              '    <span class="muted"> (' + escapeHtml(al.author || "") + ")</span>" +
+              "  </div>" +
+              '  <button type="button" class="btn btn-sm btn-success" data-action="resolve-alert" data-alert-id="' + escapeHtml(al.id) + '">Résolu</button>' +
+              "</div>";
+          });
+          html += "</div>";
+        }
+
+        html += '<div class="filter-bar">';
+        sectors.forEach(function (sec) {
+          var label = sec === "ALL" ? "Tous les secteurs" : sec;
+          var active = localState.lotFilterSector === sec ? " active" : "";
+          html += '<button type="button" class="chip' + active + '" data-action="filter-sector" data-sector="' + sec + '">' + label + "</button>";
+        });
+        html +=
+          '<button type="button" class="chip chip-alert' + (localState.lotFilterAlertsOnly ? " active" : "") + '" data-action="toggle-filter-alerts">' +
+          "Alertes uniquement (" + alertsCount + ")" +
+          "</button>" +
+          "</div>";
+
+        sharedState.masterLots.forEach(function (mLot) {
+          if (localState.lotFilterSector !== "ALL" && mLot.sector !== localState.lotFilterSector) return;
+
+          var masterAlerts = sharedState.alerts.filter(function (a) { return a.masterId === mLot.id; });
+          if (localState.lotFilterAlertsOnly && masterAlerts.length === 0) return;
+
+          html +=
+            '<section class="master-lot">' +
+            '  <button type="button" class="master-header" data-action="toggle-master" data-master-id="' + escapeHtml(mLot.id) + '">' +
+            '    <div class="master-title-wrap">' +
+            '      <span class="sector-pill">' + escapeHtml(mLot.sector) + "</span>" +
+            '      <span class="master-name">' + escapeHtml(mLot.name) + "</span>" +
+            (masterAlerts.length > 0 ? '<span class="nav-badge badge-red" style="position:static;">' + masterAlerts.length + " alerte(s)</span>" : "") +
+            "    </div>" +
+            '    <span class="muted">' + (mLot.expanded ? "Masquer ▲" : "Afficher ▼") + "</span>" +
+            "  </button>";
+
+          if (mLot.expanded) {
+            html += '<div class="master-body">';
+            if (mLot.sublots.length === 0) {
+              html +=
+                '<div style="text-align:center;padding:16px;">' +
+                '  <p class="muted" style="margin:0 0 10px;">À venir — Aucun sous-lot configuré dans ' + escapeHtml(mLot.name) + ".</p>" +
+                '  <button type="button" class="btn btn-sm btn-primary" data-action="open-add-sublot" data-master-id="' + escapeHtml(mLot.id) + '">+ Ajouter un sous-lot</button>' +
+                "</div>";
+            } else {
+              html += '<div class="sublot-grid">';
+              mLot.sublots.forEach(function (sub) {
+                var subAlerts = sharedState.alerts.filter(function (a) { return a.sublotId === sub.id; });
+                if (localState.lotFilterAlertsOnly && subAlerts.length === 0) return;
+
+                var okCount = (sub.items || []).filter(function (it) { return it.ok; }).length;
+                var totalCount = (sub.items || []).length;
+
+                html +=
+                  '<article class="sublot-card' + (subAlerts.length > 0 ? " has-alert" : "") + '">' +
+                  "  <div>" +
+                  '    <div class="sublot-top">' +
+                  '      <h3 class="sublot-title">' + escapeHtml(sub.name) + "</h3>" +
+                  '      <span class="tag">Inventaire : ' + okCount + "/" + totalCount + "</span>" +
+                  "    </div>" +
+                  '    <div class="status-row" style="margin-top:8px;">' +
+                  '      <button type="button" class="status-badge ' + (sub.ready ? "st-ready" : "st-incomplete") + '" data-action="toggle-sublot-ready" data-master-id="' + escapeHtml(mLot.id) + '" data-sublot-id="' + escapeHtml(sub.id) + '">' +
+                  (sub.ready ? "● Prêt à la formation" : "▲ Incomplet") +
+                  "      </button>" +
+                  '      <button type="button" class="status-badge ' + (sub.reserved ? "st-reserved" : "st-avail") + '" data-action="toggle-sublot-reserved" data-master-id="' + escapeHtml(mLot.id) + '" data-sublot-id="' + escapeHtml(sub.id) + '">' +
+                  (sub.reserved ? "● Réservé" : "● Disponible") +
+                  "      </button>" +
+                  "    </div>" +
+                  (sub.reserved && (sub.reservedBy || sub.reservedDates)
+                    ? '<div class="muted" style="margin-top:7px;">Réservé par <strong>' + escapeHtml(sub.reservedBy || "Formateur") + "</strong>" + (sub.reservedDates ? " (" + escapeHtml(sub.reservedDates) + ")" : "") + "</div>"
+                    : "") +
+                  (subAlerts.length > 0
+                    ? '<div class="alert-box" style="margin-top:8px;">' +
+                      subAlerts.map(function (sa) {
+                        return '<div class="alert-line"><span><strong>' + escapeHtml(sa.type) + " :</strong> " + escapeHtml(sa.detail) + "</span>" +
+                               '<button type="button" class="btn btn-sm btn-ghost" data-action="resolve-alert" data-alert-id="' + escapeHtml(sa.id) + '">OK</button></div>';
+                      }).join("") +
+                      "</div>"
+                    : "") +
+                  "  </div>" +
+                  '  <div class="sublot-actions">' +
+                  '    <button type="button" class="btn btn-sm" data-action="open-inventory" data-master-id="' + escapeHtml(mLot.id) + '" data-sublot-id="' + escapeHtml(sub.id) + '">Inventaire</button>' +
+                  '    <button type="button" class="btn btn-sm btn-ghost" data-action="open-alert-modal" data-master-id="' + escapeHtml(mLot.id) + '" data-sublot-id="' + escapeHtml(sub.id) + '">Signaler</button>' +
+                  "  </div>" +
+                  "</article>";
+              });
+              html += "</div>";
+            }
+            html += "</div>";
+          }
+          html += "</section>";
+        });
+
+        return html;
+      }
+
+      /* =====================================================================
+         10. ONGLET 2 : SITES DE FORMATION (SANS CODES SENSIBLES)
+         ===================================================================== */
+      function renderSitesTab() {
+        var html =
+          '<div class="page-head">' +
+          "  <div>" +
+          '    <h2 class="page-title">Lieux de formation</h2>' +
+          '    <p class="page-desc">Logistique, récupération des clés, localisation des salles et stockage matériel.</p>' +
+          "  </div>" +
+          '  <button type="button" class="btn btn-primary" data-action="open-site-modal">+ Ajouter un site</button>' +
+          "</div>";
+
+        sharedState.sites.forEach(function (site) {
+          html +=
+            '<div class="card">' +
+            '  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;">' +
+            '    <h3 style="margin:0;font-size:17px;font-weight:800;">' + escapeHtml(site.name) + "</h3>" +
+            '    <button type="button" class="btn btn-sm" data-action="open-site-modal" data-site-id="' + escapeHtml(site.id) + '">Modifier</button>' +
+            "  </div>" +
+            '  <div class="grid-2">' +
+            '    <div><span class="muted">Clés & accès :</span><br/><strong>' + escapeHtml(site.keys || "Non renseigné") + "</strong></div>" +
+            '    <div><span class="muted">Localisation salle :</span><br/><strong>' + escapeHtml(site.location || "Non renseigné") + "</strong></div>" +
+            '    <div><span class="muted">Stockage matériel :</span><br/><strong>' + escapeHtml(site.storage || "Non renseigné") + "</strong></div>" +
+            '    <div><span class="muted">Consignes :</span><br/><span>' + escapeHtml(site.notes || "—") + "</span></div>" +
+            "  </div>" +
+            "</div>";
+        });
+
+        return html;
+      }
+
+      /* =====================================================================
+         11. ONGLET 3 : PÉDAGOGIE (SESSION, CONDUITE MES, HISTORIQUE)
+         ===================================================================== */
+      function renderPedagogieTab() {
+        var activeCount = localState.activeMesList.length;
+        var histCount = localState.mesHistory.length;
+
+        var html =
+          '<div class="page-head">' +
+          "  <div>" +
+          '    <h2 class="page-title">Pédagogie & Mises en situation</h2>' +
+          '    <p class="page-desc">Constitution des équipes, tirage aléatoire de scénarios et suivi chronométré.</p>' +
+          "  </div>" +
+          "</div>" +
+          '<div class="ped-subtabs">' +
+          '  <button type="button" class="ped-subtab' + (localState.pedSubTab === "session" ? " active" : "") + '" data-action="switch-ped-subtab" data-subtab="session">Session & Attribution</button>' +
+          '  <button type="button" class="ped-subtab' + (localState.pedSubTab === "conduite" ? " active" : "") + '" data-action="switch-ped-subtab" data-subtab="conduite">Conduite MES' + (activeCount > 0 ? '<span class="inline-pill">' + activeCount + "</span>" : "") + "</button>" +
+          '  <button type="button" class="ped-subtab' + (localState.pedSubTab === "historique" ? " active" : "") + '" data-action="switch-ped-subtab" data-subtab="historique">Historique' + (histCount > 0 ? '<span class="inline-pill">' + histCount + "</span>" : "") + "</button>" +
+          "</div>";
+
+        if (localState.pedSubTab === "session") return html + renderPedSessionSubtab();
+        if (localState.pedSubTab === "conduite") return html + renderPedConduiteSubtab();
+        return html + renderPedHistoriqueSubtab();
+      }
+
+      function renderPedSessionSubtab() {
+        var sess = localState.session;
+        var isStgn1 = sess.courseType === "STGN1";
+        var formatLabel = isStgn1 ? (sess.trinomeEnabled ? "Trinôme (3)" : "Binôme (2)") : "Solo (1)";
+
+        var compatibleScenarios = localState.scenarios.filter(function (s) {
+          return s.course === sess.courseType || s.course === "TOUS";
+        });
+
+        var html =
+          '<div class="card">' +
+          '  <h3 style="margin:0 0 10px;font-size:16px;">1. Paramètres de la session</h3>' +
+          '  <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;">' +
+          '    <button type="button" class="chip' + (sess.courseType === "PSC" ? " active" : "") + '" data-action="set-course-type" data-course="PSC">PSC (Solo par défaut)</button>' +
+          '    <button type="button" class="chip' + (sess.courseType === "STGN1" ? " active" : "") + '" data-action="set-course-type" data-course="STGN1">STGN1 (Binôme par défaut)</button>' +
+          (isStgn1
+            ? '<button type="button" class="chip' + (sess.trinomeEnabled ? " active" : "") + '" data-action="toggle-trinome">Option Trinôme : ' + (sess.trinomeEnabled ? "ACTIVÉE" : "Désactivée") + "</button>"
+            : "") +
+          "  </div>" +
+          '  <label for="learner-input">Ajouter des apprenants (un nom ou plusieurs séparés par virgule / retour à la ligne)</label>' +
+          '  <div style="display:flex;gap:8px;margin-bottom:10px;">' +
+          '    <input type="text" id="learner-input" placeholder="Ex: Gend. Martin, Gend. Bernard..." style="margin-bottom:0;" />' +
+          '    <button type="button" class="btn btn-primary" data-action="add-learners">Ajouter</button>' +
+          "  </div>";
+
+        if (sess.learners.length > 0) {
+          html += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">';
+          sess.learners.forEach(function (name, idx) {
+            html +=
+              '<span class="tag" style="display:inline-flex;align-items:center;gap:6px;padding:5px 9px;font-size:12.5px;">' +
+              escapeHtml(name) +
+              '<button type="button" data-action="remove-learner" data-idx="' + idx + '" style="background:none;border:none;color:#FCA5A5;cursor:pointer;font-weight:900;padding:0 2px;">×</button>' +
+              "</span>";
+          });
+          html += "</div>";
+        } else {
+          html += '<p class="muted" style="margin:0 0 12px;">Aucun apprenant saisi pour le moment.</p>';
+        }
+
+        html +=
+          '  <div style="display:flex;flex-wrap:wrap;gap:8px;">' +
+          '    <button type="button" class="btn btn-success" data-action="random-assign-mes">Attribuer aléatoirement en ' + formatLabel + "</button>" +
+          (sess.learners.length > 0 ? '<button type="button" class="btn btn-ghost btn-sm" data-action="clear-learners">Vider la liste</button>' : "") +
+          "  </div>" +
+          "</div>" +
+
+          '<div class="card">' +
+          '  <h3 style="margin:0 0 10px;font-size:16px;">2. Scénarios disponibles (' + escapeHtml(sess.courseType) + ")</h3>";
+
+        compatibleScenarios.forEach(function (sc) {
+          html +=
+            '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--border);">' +
+            "  <div>" +
+            "    <strong>" + escapeHtml(sc.title) + "</strong>" +
+            '    <div class="muted">' + escapeHtml(sc.context) + "</div>" +
+            "  </div>" +
+            '  <button type="button" class="btn btn-sm btn-primary" data-action="launch-scenario" data-scenario-id="' + escapeHtml(sc.id) + '">Lancer</button>' +
+            "</div>";
+        });
+
+        html += "</div>";
+        return html;
+      }
+
+      function renderPedConduiteSubtab() {
+        if (localState.activeMesList.length === 0) {
+          return (
+            '<div class="card" style="text-align:center;padding:24px;">' +
+            '  <p class="muted" style="margin:0 0 12px;">Aucune mise en situation active.</p>' +
+            '  <button type="button" class="btn btn-primary" data-action="switch-ped-subtab" data-subtab="session">Créer ou attribuer une MES</button>' +
+            "</div>"
+          );
+        }
+
+        var selected = localState.activeMesList.find(function (m) { return m.id === localState.selectedMesId; }) || localState.activeMesList[0];
+        localState.selectedMesId = selected.id;
+
+        var html = '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">';
+        localState.activeMesList.forEach(function (m, idx) {
+          var active = m.id === selected.id ? " active" : "";
+          var label = m.learners && m.learners.length ? m.learners.join(" + ") : "Atelier #" + (idx + 1);
+          html += '<button type="button" class="chip' + active + '" data-action="select-mes" data-mes-id="' + escapeHtml(m.id) + '">' + escapeHtml(label) + "</button>";
+        });
+        html += "</div>";
+
+        var elapsed = formatDuration(getMesElapsedMs(selected));
+        var chosenStepIds = selected.selectedStepIds || localState.keySteps.map(function (k) { return k.id; });
+        var activeSteps = localState.keySteps.filter(function (k) { return chosenStepIds.indexOf(k.id) !== -1; });
+
+        html +=
+          '<div class="card">' +
+          '  <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;margin-bottom:10px;">' +
+          "    <div>" +
+          '      <span class="sector-pill">' + escapeHtml(selected.format || "MES") + "</span> " +
+          '      <strong style="font-size:16px;">' + escapeHtml(selected.scenarioTitle) + "</strong>" +
+          '      <div class="muted" style="margin-top:3px;">Apprenant(s) : <strong>' + escapeHtml((selected.learners || []).join(", ") || "Non attribué") + "</strong></div>" +
+          "    </div>" +
+          '    <button type="button" class="btn btn-sm btn-ghost" data-action="open-mes-steps-modal" data-mes-id="' + escapeHtml(selected.id) + '">Étapes chrono</button>' +
+          "  </div>" +
+          '  <div class="muted" style="background:var(--bg-input);padding:9px;border-radius:8px;margin-bottom:12px;">' + escapeHtml(selected.scenarioContext || "") + "</div>" +
+
+          '  <h4 style="margin:0 0 8px;font-size:14px;color:var(--gold);">Notes & Débriefing (Chronomètre intégré)</h4>' +
+          '  <div class="chrono-sticky">' +
+          '    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">' +
+          '      <div class="chrono-display' + (selected.running ? " running" : "") + '" data-mes-timer="' + escapeHtml(selected.id) + '">' + elapsed + "</div>" +
+          '      <div style="display:flex;gap:7px;">' +
+          '        <button type="button" class="btn btn-sm ' + (selected.running ? "btn-amber" : "btn-success") + '" data-action="toggle-mes-timer" data-mes-id="' + escapeHtml(selected.id) + '">' + (selected.running ? "Pause" : "Démarrer") + "</button>" +
+          '        <button type="button" class="btn btn-sm btn-ghost" data-action="reset-mes-timer" data-mes-id="' + escapeHtml(selected.id) + '">RAZ</button>' +
+          "      </div>" +
+          "    </div>" +
+          '    <div class="top-chrono-grid">' +
+          activeSteps.map(function (st) {
+            return '<button type="button" class="top-btn" data-action="stamp-mes-step" data-mes-id="' + escapeHtml(selected.id) + '" data-step-label="' + escapeHtml(st.label) + '">+ ' + escapeHtml(st.label) + "</button>";
+          }).join("") +
+          "    </div>" +
+          "  </div>" +
+
+          '  <label>Observations du formateur</label>' +
+          '  <textarea data-mes-field="observations" data-mes-id="' + escapeHtml(selected.id) + '" placeholder="Attitude, gestion du stress, communication...">' + escapeHtml(selected.observations || "") + "</textarea>" +
+
+          '  <label>Actions réalisées (horodatage Top Chrono inclus)</label>' +
+          '  <textarea data-mes-field="actions" data-mes-id="' + escapeHtml(selected.id) + '" placeholder="Gestes techniques effectués et chronologie...">' + escapeHtml(selected.actions || "") + "</textarea>" +
+
+          '  <div class="grid-2">' +
+          "    <div>" +
+          "      <label>Points positifs</label>" +
+          '      <textarea data-mes-field="positives" data-mes-id="' + escapeHtml(selected.id) + '" placeholder="Acquis validés...">' + escapeHtml(selected.positives || "") + "</textarea>" +
+          "    </div>" +
+          "    <div>" +
+          "      <label>Points à reprendre</label>" +
+          '      <textarea data-mes-field="improvements" data-mes-id="' + escapeHtml(selected.id) + '" placeholder="Axes de progression...">' + escapeHtml(selected.improvements || "") + "</textarea>" +
+          "    </div>" +
+          "  </div>" +
+
+          "  <label>Éléments à restituer au débriefing</label>" +
+          '  <textarea data-mes-field="debrief" data-mes-id="' + escapeHtml(selected.id) + '" placeholder="Synthèse clé à partager avec le groupe...">' + escapeHtml(selected.debrief || "") + "</textarea>" +
+
+          '  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;">' +
+          '    <button type="button" class="btn btn-primary" data-action="copy-mes-summary" data-mes-id="' + escapeHtml(selected.id) + '">Copier le bilan</button>' +
+          '    <button type="button" class="btn btn-success" data-action="archive-mes" data-mes-id="' + escapeHtml(selected.id) + '">Clôturer & Archiver</button>' +
+          '    <button type="button" class="btn btn-danger btn-sm" data-action="delete-mes" data-mes-id="' + escapeHtml(selected.id) + '">Supprimer</button>' +
+          "  </div>" +
+          "</div>";
+
+        return html;
+      }
+
+      function renderPedHistoriqueSubtab() {
+        if (localState.mesHistory.length === 0) {
+          return '<div class="card"><p class="muted" style="margin:0;">Aucune mise en situation archivée.</p></div>';
+        }
+        var html = "";
+        localState.mesHistory.forEach(function (item) {
+          html +=
+            '<div class="card">' +
+            '  <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">' +
+            "    <div>" +
+            "      <strong>" + escapeHtml(item.scenarioTitle) + "</strong> (" + escapeHtml(item.duration || "00:00") + ")" +
+            '      <div class="muted">' + escapeHtml((item.learners || []).join(", ")) + " • " + escapeHtml(item.archivedAt || "") + "</div>" +
+            "    </div>" +
+            '    <button type="button" class="btn btn-sm" data-action="copy-history-item" data-hist-id="' + escapeHtml(item.id) + '">Copier</button>' +
+            "  </div>" +
+            (item.debrief ? '<p style="margin:8px 0 0;font-size:13px;"><strong>Débriefing :</strong> ' + escapeHtml(item.debrief) + "</p>" : "") +
+            "</div>";
+        });
+        return html;
+      }
+
+      /* =====================================================================
+         12. ONGLET 4 : PARAMÈTRES (SUPABASE, LOGO, SCÉNARIOS, ÉTAPES, JSON)
+         ===================================================================== */
+      function renderParametresTab() {
+        var html =
+          '<div class="page-head">' +
+          "  <div>" +
+          '    <h2 class="page-title">Paramètres</h2>' +
+          '    <p class="page-desc">Synchronisation Supabase, identité visuelle, scénarios et étapes chronomètre.</p>' +
+          "  </div>" +
+          "</div>" +
+
+          /* Bloc Supabase */
+          '<div class="card">' +
+          '  <h3 style="margin:0 0 8px;font-size:16px;">Synchronisation multi-utilisateurs (Supabase)</h3>' +
+          '  <p class="muted" style="margin:0 0 10px;">' +
+          (currentUser
+            ? "Connecté en tant que <strong>" + escapeHtml(currentUser.email) + "</strong>."
+            : "Non connecté à Supabase (fonctionnement local uniquement).") +
+          (syncErrorMessage ? ' <span style="color:#FCA5A5;">(' + escapeHtml(syncErrorMessage) + ")</span>" : "") +
+          "  </p>" +
+          '  <form id="settings-sb-form">' +
+          '    <label>Project URL Supabase</label>' +
+          '    <input type="url" id="settings-sb-url" placeholder="https://xxxx.supabase.co" value="' + escapeHtml(supabaseConfig.url) + '" />' +
+          '    <label>Clé publique Supabase</label>' +
+          '    <input type="text" id="settings-sb-key" placeholder="sb_publishable_..." value="' + escapeHtml(supabaseConfig.anonKey) + '" />' +
+          '    <div style="display:flex;flex-wrap:wrap;gap:8px;">' +
+          '      <button type="submit" class="btn btn-primary">Enregistrer configuration Supabase</button>' +
+          (currentUser ? '<button type="button" class="btn btn-ghost" data-action="logout">Se déconnecter</button>' : '<button type="button" class="btn btn-success" data-action="exit-offline-mode">Aller à l’écran de connexion</button>') +
+          "    </div>" +
+          "  </form>" +
+          "</div>" +
+
+          /* Bloc Logo Rondache */
+          '<div class="card">' +
+          '  <h3 style="margin:0 0 8px;font-size:16px;">Rondache de la cellule</h3>' +
+          '  <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">' +
+          '    <div class="rondache-box" style="width:68px;height:68px;">' + getLogoMarkup() + "</div>" +
+          '    <div style="display:flex;flex-wrap:wrap;gap:8px;">' +
+          '      <label class="btn btn-sm btn-primary" style="margin:0;cursor:pointer;">Importer une photo<input type="file" id="logo-file-input" accept="image/*" class="hidden" /></label>' +
+          (localState.customLogoDataUrl ? '<button type="button" class="btn btn-sm btn-ghost" data-action="reset-logo">Restaurer SVG officiel</button>' : "") +
+          "    </div>" +
+          "  </div>" +
+          "</div>" +
+
+          /* Bloc Scénarios personnalisés */
+          '<div class="card">' +
+          '  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;">' +
+          '    <h3 style="margin:0;font-size:16px;">Mes scénarios MES (' + localState.scenarios.length + ")</h3>" +
+          '    <button type="button" class="btn btn-sm btn-primary" data-action="open-scenario-modal">+ Nouveau scénario</button>' +
+          "  </div>";
+
+        localState.scenarios.forEach(function (sc) {
+          html +=
+            '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid var(--border);">' +
+            "  <div>" +
+            '    <span class="tag">' + escapeHtml(sc.course) + "</span> <strong>" + escapeHtml(sc.title) + "</strong>" +
+            '    <div class="muted">' + escapeHtml(sc.context) + "</div>" +
+            "  </div>" +
+            '  <div style="display:flex;gap:6px;flex-shrink:0;">' +
+            '    <button type="button" class="btn btn-sm" data-action="open-scenario-modal" data-scenario-id="' + escapeHtml(sc.id) + '">Éditer</button>' +
+            '    <button type="button" class="btn btn-sm btn-danger" data-action="delete-scenario" data-scenario-id="' + escapeHtml(sc.id) + '">×</button>' +
+            "  </div>" +
+            "</div>";
+        });
+        html += "</div>" +
+
+          /* Bloc Étapes clés chronomètre */
+          '<div class="card">' +
+          '  <h3 style="margin:0 0 8px;font-size:16px;">Étapes clés du chronomètre (Top Chrono)</h3>' +
+          '  <div style="display:flex;gap:8px;margin-bottom:10px;">' +
+          '    <input type="text" id="new-keystep-input" placeholder="Ex: Contrôle saignement..." style="margin-bottom:0;" />' +
+          '    <button type="button" class="btn btn-primary" data-action="add-keystep">Ajouter</button>' +
+          "  </div>" +
+          '  <div style="display:flex;flex-wrap:wrap;gap:6px;">' +
+          localState.keySteps.map(function (ks) {
+            return '<span class="tag" style="display:inline-flex;align-items:center;gap:6px;padding:5px 9px;">' +
+                   escapeHtml(ks.label) +
+                   '<button type="button" data-action="remove-keystep" data-ks-id="' + escapeHtml(ks.id) + '" style="background:none;border:none;color:#FCA5A5;cursor:pointer;font-weight:900;">×</button>' +
+                   "</span>";
+          }).join("") +
+          "  </div>" +
+          "</div>" +
+
+          /* Bloc Sauvegarde JSON */
+          '<div class="card">' +
+          '  <h3 style="margin:0 0 8px;font-size:16px;">Sauvegarde & Export</h3>' +
+          '  <div style="display:flex;flex-wrap:wrap;gap:8px;">' +
+          '    <button type="button" class="btn" data-action="export-json">Exporter sauvegarde JSON</button>' +
+          '    <label class="btn" style="margin:0;cursor:pointer;">Importer JSON<input type="file" id="import-json-input" accept="application/json" class="hidden" /></label>' +
+          "  </div>" +
+          "</div>";
+
+        return html;
+      }
+
+      /* =====================================================================
+         13. MODALES DYNAMIQUES
+         ===================================================================== */
+      function openModal(title, bodyHtml) {
+        var root = document.getElementById("modal-root");
+        root.innerHTML =
+          '<div class="modal-backdrop" data-action="close-modal-backdrop">' +
+          '  <div class="modal-box" role="dialog" aria-modal="true">' +
+          '    <div class="modal-head">' +
+          '      <h3 class="modal-title">' + escapeHtml(title) + "</h3>" +
+          '      <button type="button" class="btn btn-sm btn-ghost" data-action="close-modal">✕</button>' +
+          "    </div>" +
+          bodyHtml +
+          "  </div>" +
+          "</div>";
+      }
+
+      function closeModal() {
+        var root = document.getElementById("modal-root");
+        if (root) root.innerHTML = "";
+      }
+
+      function showAlertModal(defaultMasterId, defaultSublotId) {
+        var mId = defaultMasterId || sharedState.masterLots[0].id;
+        var masterOptions = sharedState.masterLots.map(function (m) {
+          return '<option value="' + escapeHtml(m.id) + '"' + (m.id === mId ? " selected" : "") + ">" + escapeHtml(m.name) + "</option>";
+        }).join("");
+
+        var currentMaster = sharedState.masterLots.find(function (m) { return m.id === mId; }) || sharedState.masterLots[0];
+        var subOptions = (currentMaster.sublots || []).map(function (s) {
+          return '<option value="' + escapeHtml(s.id) + '"' + (s.id === defaultSublotId ? " selected" : "") + ">" + escapeHtml(s.name) + "</option>";
+        }).join("");
+
+        openModal(
+          "Signaler un manque ou une casse",
+          '<form id="alert-form">' +
+          "  <label>Lot principal</label>" +
+          '  <select id="alert-master-select">' + masterOptions + "</select>" +
+          "  <label>Sous-lot concerné</label>" +
+          '  <select id="alert-sublot-select">' + (subOptions || '<option value="">Lot général</option>') + "</select>" +
+          "  <label>Nature du signalement</label>" +
+          '  <select id="alert-type-select">' +
+          '    <option value="Consommable à recompléter">Consommable à recompléter</option>' +
+          '    <option value="Casse / Matériel défectueux">Casse / Matériel défectueux</option>' +
+          "  </select>" +
+          "  <label>Détail du matériel manquant ou cassé</label>" +
+          '  <input type="text" id="alert-detail-input" required placeholder="Ex: 2 garrots entraînement HS, électrodes DAE..." />' +
+          '  <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:14px;">' +
+          '    <input type="checkbox" id="alert-mark-incomplete" checked style="width:auto;margin:0;" />' +
+          "    <span>Passer le sous-lot en statut « Incomplet »</span>" +
+          "  </label>" +
+          '  <button type="submit" class="btn btn-danger" style="width:100%;">Enregistrer le signalement</button>' +
+          "</form>"
+        );
+      }
+
+      function showReservationModal(masterId, sublotId) {
+        var mLot = sharedState.masterLots.find(function (m) { return m.id === masterId; });
+        var sub = mLot && mLot.sublots.find(function (s) { return s.id === sublotId; });
+        if (!sub) return;
+        var defaultAuthor = (currentUser && ((currentUser.user_metadata && currentUser.user_metadata.full_name) || currentUser.email)) || "";
+
+        openModal(
+          "Réserver : " + mLot.name + " — " + sub.name,
+          '<form id="reserve-form" data-master-id="' + escapeHtml(masterId) + '" data-sublot-id="' + escapeHtml(sublotId) + '">' +
+          "  <label>Formateur / Demandeur</label>" +
+          '  <input type="text" id="res-by" required value="' + escapeHtml(sub.reservedBy || defaultAuthor) + '" placeholder="Grade et nom du formateur" />' +
+          "  <label>Dates ou session concernée</label>" +
+          '  <input type="text" id="res-dates" required value="' + escapeHtml(sub.reservedDates || "") + '" placeholder="Ex: 12-13 déc. — Session PSC" />' +
+          '  <button type="submit" class="btn btn-primary" style="width:100%;">Confirmer la réservation</button>' +
+          "</form>"
+        );
+      }
+
+      function showInventoryModal(masterId, sublotId) {
+        var mLot = sharedState.masterLots.find(function (m) { return m.id === masterId; });
+        var sub = mLot && mLot.sublots.find(function (s) { return s.id === sublotId; });
+        if (!sub) return;
+
+        var itemsHtml = (sub.items || []).map(function (it, idx) {
+          return (
+            '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);">' +
+            '  <label style="display:flex;align-items:center;gap:8px;margin:0;cursor:pointer;color:var(--text);">' +
+            '    <input type="checkbox" data-action="toggle-inv-item" data-master-id="' + escapeHtml(masterId) + '" data-sublot-id="' + escapeHtml(sublotId) + '" data-idx="' + idx + '"' + (it.ok ? " checked" : "") + ' style="width:auto;margin:0;" />' +
+            "    <span>" + escapeHtml(it.name) + " (×" + (it.qty || 1) + ")</span>" +
+            "  </label>" +
+            '  <button type="button" class="btn btn-sm btn-ghost" data-action="delete-inv-item" data-master-id="' + escapeHtml(masterId) + '" data-sublot-id="' + escapeHtml(sublotId) + '" data-idx="' + idx + '">×</button>' +
+            "</div>"
+          );
+        }).join("");
+
+        openModal(
+          "Inventaire : " + mLot.name + " — " + sub.name,
+          (itemsHtml || '<p class="muted">Aucun article dans cet inventaire.</p>') +
+          '<form id="add-inv-form" data-master-id="' + escapeHtml(masterId) + '" data-sublot-id="' + escapeHtml(sublotId) + '" style="margin-top:14px;">' +
+          "  <label>Ajouter un matériel à la liste</label>" +
+          '  <div style="display:flex;gap:8px;">' +
+          '    <input type="text" id="inv-new-name" required placeholder="Désignation matériel..." style="margin-bottom:0;" />' +
+          '    <input type="text" id="inv-new-qty" value="1" style="width:64px;margin-bottom:0;text-align:center;" />' +
+          '    <button type="submit" class="btn btn-primary">+</button>' +
+          "  </div>" +
+          "</form>"
+        );
+      }
+
+      function showSiteModal(siteId) {
+        var site = siteId ? sharedState.sites.find(function (s) { return s.id === siteId; }) : null;
+        openModal(
+          site ? "Modifier le site" : "Nouveau lieu de formation",
+          '<form id="site-form" data-site-id="' + escapeHtml(siteId || "") + '">' +
+          "  <label>Nom du site</label>" +
+          '  <input type="text" id="site-name" required value="' + escapeHtml(site ? site.name : "") + '" />' +
+          "  <label>Récupération des clés / accès</label>" +
+          '  <input type="text" id="site-keys" value="' + escapeHtml(site ? site.keys : "") + '" />' +
+          "  <label>Localisation de la salle</label>" +
+          '  <input type="text" id="site-location" value="' + escapeHtml(site ? site.location : "") + '" />' +
+          "  <label>Stockage du matériel</label>" +
+          '  <input type="text" id="site-storage" value="' + escapeHtml(site ? site.storage : "") + '" />' +
+          "  <label>Notes logistiques (sans données sensibles)</label>" +
+          '  <textarea id="site-notes">' + escapeHtml(site ? site.notes : "") + "</textarea>" +
+          '  <button type="submit" class="btn btn-primary" style="width:100%;">Enregistrer le site</button>' +
+          "</form>"
+        );
+      }
+
+      function showScenarioModal(scenarioId) {
+        var sc = scenarioId ? localState.scenarios.find(function (s) { return s.id === scenarioId; }) : null;
+        openModal(
+          sc ? "Modifier le scénario" : "Nouveau scénario MES",
+          '<form id="scenario-form" data-scenario-id="' + escapeHtml(scenarioId || "") + '">' +
+          "  <label>Titre du scénario</label>" +
+          '  <input type="text" id="sc-title" required value="' + escapeHtml(sc ? sc.title : "") + '" />' +
+          "  <label>Formation</label>" +
+          '  <select id="sc-course">' +
+          '    <option value="PSC"' + (sc && sc.course === "PSC" ? " selected" : "") + ">PSC</option>" +
+          '    <option value="STGN1"' + (sc && sc.course === "STGN1" ? " selected" : "") + ">STGN1</option>" +
+          '    <option value="TOUS"' + (sc && sc.course === "TOUS" ? " selected" : "") + ">PSC & STGN1</option>" +
+          "  </select>" +
+          "  <label>Contexte & consignes victime/plastron</label>" +
+          '  <textarea id="sc-context" required>' + escapeHtml(sc ? sc.context : "") + "</textarea>" +
+          '  <button type="submit" class="btn btn-primary" style="width:100%;">Enregistrer le scénario</button>' +
+          "</form>"
+        );
+      }
+
+      function showMesStepsModal(mesId) {
+        var mes = localState.activeMesList.find(function (m) { return m.id === mesId; });
+        if (!mes) return;
+        var chosen = mes.selectedStepIds || localState.keySteps.map(function (k) { return k.id; });
+
+        var list = localState.keySteps.map(function (ks) {
+          var checked = chosen.indexOf(ks.id) !== -1 ? " checked" : "";
+          return (
+            '<label style="display:flex;align-items:center;gap:8px;padding:6px 0;color:var(--text);cursor:pointer;">' +
+            '  <input type="checkbox" class="mes-step-chk" value="' + escapeHtml(ks.id) + '"' + checked + ' style="width:auto;margin:0;" />' +
+            "  <span>" + escapeHtml(ks.label) + "</span>" +
+            "</label>"
+          );
+        }).join("");
+
+        openModal(
+          "Étapes clés du chronomètre pour cette MES",
+          '<form id="mes-steps-form" data-mes-id="' + escapeHtml(mesId) + '">' +
+          list +
+          '  <button type="submit" class="btn btn-primary" style="width:100%;margin-top:10px;">Valider la sélection</button>' +
+          "</form>"
+        );
+      }
+
+      /* =====================================================================
+         14. GESTIONNAIRE GLOBAL D'ÉVÉNEMENTS (DÉLÉGATION PROPRE)
+         ===================================================================== */
+      document.addEventListener("click", async function (e) {
+        var target = e.target.closest("[data-action]");
+        if (!target) return;
+        var action = target.getAttribute("data-action");
+
+        if (action === "close-modal") { closeModal(); return; }
+        if (action === "close-modal-backdrop" && e.target === target) { closeModal(); return; }
+
+        if (action === "open-sb-config-modal") {
+          openModal(
+            "Configuration Supabase",
+            '<form id="supabase-quick-cfg-form">' +
+            '  <label>Project URL Supabase</label>' +
+            '  <input type="url" id="cfg-sb-url" required value="' + escapeHtml(supabaseConfig.url) + '" />' +
+            '  <label>Clé publique Supabase</label>' +
+            '  <input type="text" id="cfg-sb-key" required value="' + escapeHtml(supabaseConfig.anonKey) + '" />' +
+            '  <button type="submit" class="btn btn-primary" style="width:100%;">Enregistrer</button>' +
+            "</form>"
+          );
+          return;
+        }
+
+        if (action === "enter-offline-mode") {
+          offlineBypass = true;
+          try { localStorage.setItem(OFFLINE_MODE_KEY, "1"); } catch (err) {}
+          renderApp();
+          return;
+        }
+
+        if (action === "exit-offline-mode") {
+          offlineBypass = false;
+          try { localStorage.removeItem(OFFLINE_MODE_KEY); } catch (err) {}
+          renderApp();
+          return;
+        }
+
+        if (action === "logout") {
+          if (supabaseClient) await supabaseClient.auth.signOut();
+          currentUser = null;
+          offlineBypass = false;
+          try { localStorage.removeItem(OFFLINE_MODE_KEY); } catch (err) {}
+          renderApp();
+          return;
+        }
+
+        if (action === "sync-now") {
+          await pullAndSubscribeSupabase();
+          showToast("Synchronisation effectuée");
+          return;
+        }
+
+        if (action === "switch-tab") {
+          localState.activeTab = target.getAttribute("data-tab");
+          persistLocalOnly();
+          renderApp();
+          return;
+        }
+
+        if (action === "filter-sector") {
+          localState.lotFilterSector = target.getAttribute("data-sector");
+          persistLocalOnly();
+          renderApp();
+          return;
+        }
+
+        if (action === "toggle-filter-alerts") {
+          localState.lotFilterAlertsOnly = !localState.lotFilterAlertsOnly;
+          persistLocalOnly();
+          renderApp();
+          return;
+        }
+
+        if (action === "toggle-master") {
+          var mId = target.getAttribute("data-master-id");
+          var mLot = sharedState.masterLots.find(function (m) { return m.id === mId; });
+          if (mLot) {
+            mLot.expanded = !mLot.expanded;
+            persistLocalOnly();
+            renderApp();
+          }
+          return;
+        }
+
+        if (action === "open-add-sublot") {
+          var mIdAdd = target.getAttribute("data-master-id");
+          openModal(
+            "Ajouter un sous-lot",
+            '<form id="add-sublot-form" data-master-id="' + escapeHtml(mIdAdd) + '">' +
+            "  <label>Nom du sous-lot</label>" +
+            '  <input type="text" id="new-sublot-name" required placeholder="Ex: Lot PSC Réserve" />' +
+            '  <button type="submit" class="btn btn-primary" style="width:100%;">Créer le sous-lot</button>' +
+            "</form>"
+          );
+          return;
+        }
+
+        if (action === "toggle-sublot-ready") {
+          var mR = sharedState.masterLots.find(function (m) { return m.id === target.getAttribute("data-master-id"); });
+          var sR = mR && mR.sublots.find(function (s) { return s.id === target.getAttribute("data-sublot-id"); });
+          if (sR) {
+            sR.ready = !sR.ready;
+            scheduleSharedSync();
+            renderApp();
+          }
+          return;
+        }
+
+        if (action === "toggle-sublot-reserved") {
+          var mRes = sharedState.masterLots.find(function (m) { return m.id === target.getAttribute("data-master-id"); });
+          var sRes = mRes && mRes.sublots.find(function (s) { return s.id === target.getAttribute("data-sublot-id"); });
+          if (sRes) {
+            if (sRes.reserved) {
+              sRes.reserved = false;
+              sRes.reservedBy = "";
+              sRes.reservedDates = "";
+              scheduleSharedSync();
+              renderApp();
+            } else {
+              showReservationModal(mRes.id, sRes.id);
+            }
+          }
+          return;
+        }
+
+        if (action === "open-alert-modal") {
+          showAlertModal(target.getAttribute("data-master-id"), target.getAttribute("data-sublot-id"));
+          return;
+        }
+
+        if (action === "resolve-alert") {
+          var alId = target.getAttribute("data-alert-id");
+          sharedState.alerts = sharedState.alerts.filter(function (a) { return a.id !== alId; });
+          scheduleSharedSync();
+          renderApp();
+          showToast("Alerte clôturée");
+          return;
+        }
+
+        if (action === "open-inventory") {
+          showInventoryModal(target.getAttribute("data-master-id"), target.getAttribute("data-sublot-id"));
+          return;
+        }
+
+        if (action === "toggle-inv-item") {
+          var mI = sharedState.masterLots.find(function (m) { return m.id === target.getAttribute("data-master-id"); });
+          var sI = mI && mI.sublots.find(function (s) { return s.id === target.getAttribute("data-sublot-id"); });
+          var idxI = parseInt(target.getAttribute("data-idx"), 10);
+          if (sI && sI.items[idxI]) {
+            sI.items[idxI].ok = !sI.items[idxI].ok;
+            scheduleSharedSync();
+            renderApp();
+          }
+          return;
+        }
+
+        if (action === "delete-inv-item") {
+          var mD = sharedState.masterLots.find(function (m) { return m.id === target.getAttribute("data-master-id"); });
+          var sD = mD && mD.sublots.find(function (s) { return s.id === target.getAttribute("data-sublot-id"); });
+          var idxD = parseInt(target.getAttribute("data-idx"), 10);
+          if (sD) {
+            sD.items.splice(idxD, 1);
+            scheduleSharedSync();
+            showInventoryModal(mD.id, sD.id);
+            renderApp();
+          }
+          return;
+        }
+
+        if (action === "open-site-modal") {
+          showSiteModal(target.getAttribute("data-site-id"));
+          return;
+        }
+
+        /* Pédagogie actions */
+        if (action === "switch-ped-subtab") {
+          localState.pedSubTab = target.getAttribute("data-subtab");
+          persistLocalOnly();
+          renderApp();
+          return;
+        }
+
+        if (action === "set-course-type") {
+          localState.session.courseType = target.getAttribute("data-course");
+          if (localState.session.courseType === "PSC") localState.session.trinomeEnabled = false;
+          persistLocalOnly();
+          renderApp();
+          return;
+        }
+
+        if (action === "toggle-trinome") {
+          localState.session.trinomeEnabled = !localState.session.trinomeEnabled;
+          persistLocalOnly();
+          renderApp();
+          return;
+        }
+
+        if (action === "add-learners") {
+          var inp = document.getElementById("learner-input");
+          if (inp && inp.value.trim()) {
+            var names = inp.value.split(/[\n,;]+/).map(function (s) { return s.trim(); }).filter(Boolean);
+            localState.session.learners = localState.session.learners.concat(names);
+            persistLocalOnly();
+            renderApp();
+          }
+          return;
+        }
+
+        if (action === "remove-learner") {
+          var lIdx = parseInt(target.getAttribute("data-idx"), 10);
+          localState.session.learners.splice(lIdx, 1);
+          persistLocalOnly();
+          renderApp();
+          return;
+        }
+
+        if (action === "clear-learners") {
+          localState.session.learners = [];
+          persistLocalOnly();
+          renderApp();
+          return;
+        }
+
+        if (action === "random-assign-mes") {
+          var learners = localState.session.learners.slice();
+          if (learners.length === 0) {
+            showToast("Ajoutez d'abord les apprenants de la session");
+            return;
+          }
+          for (var i = learners.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var tmp = learners[i]; learners[i] = learners[j]; learners[j] = tmp;
+          }
+          var groupSize = localState.session.courseType === "PSC" ? 1 : (localState.session.trinomeEnabled ? 3 : 2);
+          var formatName = groupSize === 1 ? "Solo" : groupSize === 2 ? "Binôme" : "Trinôme";
+          var pool = localState.scenarios.filter(function (s) { return s.course === localState.session.courseType || s.course === "TOUS"; });
+          if (pool.length === 0) pool = localState.scenarios.slice();
+
+          var created = [];
+          for (var g = 0; g < learners.length; g += groupSize) {
+            var grp = learners.slice(g, g + groupSize);
+            var scPick = pool[(created.length) % pool.length];
+            created.push({
+              id: uid("mes"),
+              format: grp.length === 1 ? "Solo" : grp.length === 2 ? "Binôme" : formatName,
+              learners: grp,
+              scenarioTitle: scPick ? scPick.title : "Mise en situation",
+              scenarioContext: scPick ? scPick.context : "",
+              elapsedMs: 0,
+              running: false,
+              startedAt: null,
+              observations: "",
+              actions: "",
+              positives: "",
+              improvements: "",
+              debrief: ""
+            });
+          }
+          localState.activeMesList = created;
+          localState.selectedMesId = created[0].id;
+          localState.pedSubTab = "conduite";
+          persistLocalOnly();
+          renderApp();
+          showToast(created.length + " mise(s) en situation générée(s)");
+          return;
+        }
+
+        if (action === "launch-scenario") {
+          var scId = target.getAttribute("data-scenario-id");
+          var scObj = localState.scenarios.find(function (s) { return s.id === scId; });
+          if (!scObj) return;
+          var newMes = {
+            id: uid("mes"),
+            format: localState.session.courseType,
+            learners: localState.session.learners.slice(0, localState.session.courseType === "PSC" ? 1 : 2),
+            scenarioTitle: scObj.title,
+            scenarioContext: scObj.context,
+            elapsedMs: 0,
+            running: false,
+            startedAt: null,
+            observations: "",
+            actions: "",
+            positives: "",
+            improvements: "",
+            debrief: ""
+          };
+          localState.activeMesList.push(newMes);
+          localState.selectedMesId = newMes.id;
+          localState.pedSubTab = "conduite";
+          persistLocalOnly();
+          renderApp();
+          return;
+        }
+
+        if (action === "select-mes") {
+          localState.selectedMesId = target.getAttribute("data-mes-id");
+          persistLocalOnly();
+          renderApp();
+          return;
+        }
+
+        if (action === "toggle-mes-timer") {
+          var mesT = localState.activeMesList.find(function (m) { return m.id === target.getAttribute("data-mes-id"); });
+          if (mesT) {
+            if (mesT.running) {
+              mesT.elapsedMs = getMesElapsedMs(mesT);
+              mesT.running = false;
+              mesT.startedAt = null;
+            } else {
+              mesT.running = true;
+              mesT.startedAt = Date.now();
+            }
+            persistLocalOnly();
+            renderApp();
+          }
+          return;
+        }
+
+        if (action === "reset-mes-timer") {
+          var mesR = localState.activeMesList.find(function (m) { return m.id === target.getAttribute("data-mes-id"); });
+          if (mesR) {
+            mesR.elapsedMs = 0;
+            mesR.running = false;
+            mesR.startedAt = null;
+            persistLocalOnly();
+            renderApp();
+          }
+          return;
+        }
+
+        if (action === "stamp-mes-step") {
+          var mesS = localState.activeMesList.find(function (m) { return m.id === target.getAttribute("data-mes-id"); });
+          if (mesS) {
+            var stamp = "[" + formatDuration(getMesElapsedMs(mesS)) + "] " + target.getAttribute("data-step-label");
+            mesS.actions = (mesS.actions ? mesS.actions.trim() + "\n" : "") + stamp;
+            persistLocalOnly();
+            renderApp();
+            showToast("Top Chrono : " + stamp);
+          }
+          return;
+        }
+
+        if (action === "open-mes-steps-modal") {
+          showMesStepsModal(target.getAttribute("data-mes-id"));
+          return;
+        }
+
+        if (action === "copy-mes-summary") {
+          var mesC = localState.activeMesList.find(function (m) { return m.id === target.getAttribute("data-mes-id"); });
+          if (mesC) {
+            var txt = [
+              "BILAN MES — CELLULE SECOURISME GGD85",
+              "Scénario : " + mesC.scenarioTitle,
+              "Apprenant(s) : " + ((mesC.learners || []).join(", ") || "N/C"),
+              "Durée : " + formatDuration(getMesElapsedMs(mesC)),
+              "Observations : " + (mesC.observations || "-"),
+              "Actions réalisées :\n" + (mesC.actions || "-"),
+              "Points positifs : " + (mesC.positives || "-"),
+              "Points à reprendre : " + (mesC.improvements || "-"),
+              "Débriefing : " + (mesC.debrief || "-")
+            ].join("\n");
+            if (navigator.clipboard) navigator.clipboard.writeText(txt);
+            showToast("Bilan MES copié dans le presse-papiers");
+          }
+          return;
+        }
+
+        if (action === "archive-mes") {
+          var idA = target.getAttribute("data-mes-id");
+          var idxA = localState.activeMesList.findIndex(function (m) { return m.id === idA; });
+          if (idxA !== -1) {
+            var mA = localState.activeMesList[idxA];
+            localState.mesHistory.unshift({
+              id: mA.id,
+              scenarioTitle: mA.scenarioTitle,
+              learners: mA.learners,
+              duration: formatDuration(getMesElapsedMs(mA)),
+              debrief: mA.debrief,
+              archivedAt: new Date().toLocaleDateString("fr-FR")
+            });
+            localState.activeMesList.splice(idxA, 1);
+            localState.selectedMesId = localState.activeMesList[0] ? localState.activeMesList[0].id : null;
+            persistLocalOnly();
+            renderApp();
+            showToast("MES archivée");
+          }
+          return;
+        }
+
+        if (action === "delete-mes") {
+          var idDel = target.getAttribute("data-mes-id");
+          localState.activeMesList = localState.activeMesList.filter(function (m) { return m.id !== idDel; });
+          localState.selectedMesId = localState.activeMesList[0] ? localState.activeMesList[0].id : null;
+          persistLocalOnly();
+          renderApp();
+          return;
+        }
+
+        if (action === "copy-history-item") {
+          var hItem = localState.mesHistory.find(function (h) { return h.id === target.getAttribute("data-hist-id"); });
+          if (hItem && navigator.clipboard) {
+            navigator.clipboard.writeText(hItem.scenarioTitle + " (" + hItem.duration + ") — " + (hItem.learners || []).join(", ") + "\n" + (hItem.debrief || ""));
+            showToast("Archive copiée");
+          }
+          return;
+        }
+
+        if (action === "open-scenario-modal") {
+          showScenarioModal(target.getAttribute("data-scenario-id"));
+          return;
+        }
+
+        if (action === "delete-scenario") {
+          var scDelId = target.getAttribute("data-scenario-id");
+          localState.scenarios = localState.scenarios.filter(function (s) { return s.id !== scDelId; });
+          persistLocalOnly();
+          renderApp();
+          return;
+        }
+
+        if (action === "add-keystep") {
+          var ksInp = document.getElementById("new-keystep-input");
+          if (ksInp && ksInp.value.trim()) {
+            localState.keySteps.push({ id: uid("ks"), label: ksInp.value.trim() });
+            persistLocalOnly();
+            renderApp();
+          }
+          return;
+        }
+
+        if (action === "remove-keystep") {
+          var ksId = target.getAttribute("data-ks-id");
+          localState.keySteps = localState.keySteps.filter(function (k) { return k.id !== ksId; });
+          persistLocalOnly();
+          renderApp();
+          return;
+        }
+
+        if (action === "reset-logo") {
+          localState.customLogoDataUrl = "";
+          persistLocalOnly();
+          setupPwaAssets();
+          renderApp();
+          return;
+        }
+
+        if (action === "export-json") {
+          var blob = new Blob([JSON.stringify({ shared: sharedState, local: localState }, null, 2)], { type: "application/json" });
+          var a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = "sauvegarde-cellule-secourisme-ggd85.json";
+          a.click();
+          return;
+        }
+      });
+
+      /* Sauvegarde temps réel des notes MES sans perte de focus */
+      document.addEventListener("input", function (e) {
+        var field = e.target.getAttribute("data-mes-field");
+        if (!field) return;
+        var mesId = e.target.getAttribute("data-mes-id");
+        var mes = localState.activeMesList.find(function (m) { return m.id === mesId; });
+        if (mes) {
+          mes[field] = e.target.value;
+          persistLocalOnly();
+        }
+      });
+
+      /* Mise à jour dynamique du sélecteur de sous-lot dans la modale alerte */
+      document.addEventListener("change", function (e) {
+        if (e.target && e.target.id === "alert-master-select") {
+          var m = sharedState.masterLots.find(function (x) { return x.id === e.target.value; });
+          var subSel = document.getElementById("alert-sublot-select");
+          if (m && subSel) {
+            subSel.innerHTML = (m.sublots || []).map(function (s) {
+              return '<option value="' + escapeHtml(s.id) + '">' + escapeHtml(s.name) + "</option>";
+            }).join("") || '<option value="">Lot général</option>';
+          }
+        }
+
+        if (e.target && e.target.id === "logo-file-input" && e.target.files && e.target.files[0]) {
+          var reader = new FileReader();
+          reader.onload = function (ev) {
+            localState.customLogoDataUrl = ev.target.result;
+            persistLocalOnly();
+            setupPwaAssets();
+            renderApp();
+            showToast("Rondache personnalisée appliquée");
+          };
+          reader.readAsDataURL(e.target.files[0]);
+        }
+
+        if (e.target && e.target.id === "import-json-input" && e.target.files && e.target.files[0]) {
+          var rJson = new FileReader();
+          rJson.onload = function (ev) {
+            try {
+              var imported = JSON.parse(ev.target.result);
+              if (imported.shared) sharedState = Object.assign(createDefaultSharedData(), imported.shared);
+              if (imported.local) localState = Object.assign(createDefaultLocalData(), imported.local);
+              scheduleSharedSync();
+              renderApp();
+              showToast("Sauvegarde importée");
+            } catch (err) {
+              showToast("Fichier JSON invalide");
+            }
+          };
+          rJson.readAsText(e.target.files[0]);
+        }
+      });
+
+      /* Soumission des formulaires */
+      document.addEventListener("submit", async function (e) {
+        var form = e.target;
+        if (!form || !form.id) return;
+        e.preventDefault();
+
+        if (form.id === "supabase-quick-cfg-form" || form.id === "settings-sb-form") {
+          var uEl = form.querySelector("input[type='url']");
+          var kEl = form.querySelector("input[type='text']");
+          saveSupabaseConfig({ url: uEl.value, anonKey: kEl.value });
+          initSupabaseClient();
+          closeModal();
+          showToast("Configuration Supabase enregistrée");
+          renderApp();
+          return;
+        }
+
+        if (form.id === "supabase-login-form") {
+          var email = document.getElementById("login-email").value.trim();
+          var pass = document.getElementById("login-pass").value;
+          var errBox = document.getElementById("login-error");
+          if (!supabaseClient && !initSupabaseClient()) {
+            errBox.textContent = "Client Supabase non initialisé.";
+            errBox.classList.remove("hidden");
+            return;
+          }
+          var authRes = await supabaseClient.auth.signInWithPassword({ email: email, password: pass });
+          if (authRes.error) {
+            errBox.textContent = "Connexion refusée : " + authRes.error.message;
+            errBox.classList.remove("hidden");
+            return;
+          }
+          currentUser = authRes.data.user;
+          offlineBypass = false;
+          try { localStorage.removeItem(OFFLINE_MODE_KEY); } catch (err) {}
+          await pullAndSubscribeSupabase();
+          return;
+        }
+
+        if (form.id === "alert-form") {
+          var mId = document.getElementById("alert-master-select").value;
+          var sId = document.getElementById("alert-sublot-select").value;
+          var type = document.getElementById("alert-type-select").value;
+          var detail = document.getElementById("alert-detail-input").value.trim();
+          var markInc = document.getElementById("alert-mark-incomplete").checked;
+
+          var mObj = sharedState.masterLots.find(function (m) { return m.id === mId; });
+          var sObj = mObj && mObj.sublots.find(function (s) { return s.id === sId; });
+          var label = (mObj ? mObj.name : "") + (sObj ? " — " + sObj.name : "");
+          var author = (currentUser && ((currentUser.user_metadata && currentUser.user_metadata.full_name) || currentUser.email)) || "Formateur";
+
+          sharedState.alerts.unshift({
+            id: uid("al"),
+            masterId: mId,
+            sublotId: sId,
+            lotLabel: label,
+            type: type,
+            detail: detail,
+            author: author,
+            createdAt: new Date().toISOString()
+          });
+
+          if (markInc && sObj) sObj.ready = false;
+          closeModal();
+          scheduleSharedSync();
+          renderApp();
+          showToast("Signalement enregistré");
+          return;
+        }
+
+        if (form.id === "reserve-form") {
+          var mR = sharedState.masterLots.find(function (m) { return m.id === form.getAttribute("data-master-id"); });
+          var sR = mR && mR.sublots.find(function (s) { return s.id === form.getAttribute("data-sublot-id"); });
+          if (sR) {
+            sR.reserved = true;
+            sR.reservedBy = document.getElementById("res-by").value.trim();
+            sR.reservedDates = document.getElementById("res-dates").value.trim();
+            closeModal();
+            scheduleSharedSync();
+            renderApp();
+            showToast("Sous-lot réservé");
+          }
+          return;
+        }
+
+        if (form.id === "add-sublot-form") {
+          var mA = sharedState.masterLots.find(function (m) { return m.id === form.getAttribute("data-master-id"); });
+          var nameA = document.getElementById("new-sublot-name").value.trim();
+          if (mA && nameA) {
+            mA.sublots.push({
+              id: uid("sub"),
+              name: nameA,
+              ready: true,
+              reserved: false,
+              reservedBy: "",
+              reservedDates: "",
+              items: []
+            });
+            mA.comingSoon = false;
+            closeModal();
+            scheduleSharedSync();
+            renderApp();
+          }
+          return;
+        }
+
+        if (form.id === "add-inv-form") {
+          var mInv = sharedState.masterLots.find(function (m) { return m.id === form.getAttribute("data-master-id"); });
+          var sInv = mInv && mInv.sublots.find(function (s) { return s.id === form.getAttribute("data-sublot-id"); });
+          var nInv = document.getElementById("inv-new-name").value.trim();
+          var qInv = parseInt(document.getElementById("inv-new-qty").value, 10) || 1;
+          if (sInv && nInv) {
+            sInv.items.push({ id: uid("it"), name: nInv, qty: qInv, ok: true });
+            scheduleSharedSync();
+            showInventoryModal(mInv.id, sInv.id);
+            renderApp();
+          }
+          return;
+        }
+
+        if (form.id === "site-form") {
+          var editSiteId = form.getAttribute("data-site-id");
+          var payloadSite = {
+            id: editSiteId || uid("site"),
+            name: document.getElementById("site-name").value.trim(),
+            keys: document.getElementById("site-keys").value.trim(),
+            location: document.getElementById("site-location").value.trim(),
+            storage: document.getElementById("site-storage").value.trim(),
+            notes: document.getElementById("site-notes").value.trim()
+          };
+          if (editSiteId) {
+            var idxS = sharedState.sites.findIndex(function (s) { return s.id === editSiteId; });
+            if (idxS !== -1) sharedState.sites[idxS] = payloadSite;
+          } else {
+            sharedState.sites.push(payloadSite);
+          }
+          closeModal();
+          scheduleSharedSync();
+          renderApp();
+          return;
+        }
+
+        if (form.id === "scenario-form") {
+          var editScId = form.getAttribute("data-scenario-id");
+          var scPayload = {
+            id: editScId || uid("sc"),
+            title: document.getElementById("sc-title").value.trim(),
+            course: document.getElementById("sc-course").value,
+            formats: ["Solo", "Binôme", "Trinôme"],
+            context: document.getElementById("sc-context").value.trim()
+          };
+          if (editScId) {
+            var idxSc = localState.scenarios.findIndex(function (s) { return s.id === editScId; });
+            if (idxSc !== -1) localState.scenarios[idxSc] = scPayload;
+          } else {
+            localState.scenarios.unshift(scPayload);
+          }
+          closeModal();
+          persistLocalOnly();
+          renderApp();
+          return;
+        }
+
+        if (form.id === "mes-steps-form") {
+          var mesId = form.getAttribute("data-mes-id");
+          var mes = localState.activeMesList.find(function (m) { return m.id === mesId; });
+          if (mes) {
+            var checks = form.querySelectorAll(".mes-step-chk:checked");
+            mes.selectedStepIds = Array.prototype.map.call(checks, function (c) { return c.value; });
+            closeModal();
+            persistLocalOnly();
+            renderApp();
+          }
+          return;
+        }
+      });
+
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") closeModal();
+      });
+
+      /* =====================================================================
+         15. INITIALISATION AU DÉMARRAGE
+         ===================================================================== */
+      async function bootstrap() {
+        setupPwaAssets();
+        if (initSupabaseClient()) {
+          try {
+            var sessRes = await supabaseClient.auth.getSession();
+            if (sessRes.data && sessRes.data.session && sessRes.data.session.user) {
+              currentUser = sessRes.data.session.user;
+              await pullAndSubscribeSupabase();
+              return;
+            }
+          } catch (e) {}
+        }
+        renderApp();
+      }
+
+      bootstrap();
+    })();
+  </script>
+</body>
+</html>
