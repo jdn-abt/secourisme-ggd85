@@ -430,6 +430,14 @@
       font-size: 12px;
       color: #FECACA;
     }
+    .info-box {
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.38);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 12.5px;
+      color: #BBF7D0;
+    }
     .alert-line {
       display: flex;
       align-items: center;
@@ -695,50 +703,39 @@
         '    <path id="arc-top" d="M 38,150 A 112,112 0 1,1 262,150"/>',
         '    <path id="arc-bot" d="M 31,152 A 119,119 0 0,0 269,152"/>',
         '  </defs>',
-        '  <!-- Couronne extérieure noire à double filet -->',
         '  <circle cx="150" cy="150" r="148" fill="#18181B" stroke="#27272A" stroke-width="2"/>',
         '  <circle cx="150" cy="150" r="142" fill="none" stroke="#3F3F46" stroke-width="1.3"/>',
         '  <circle cx="150" cy="150" r="105" fill="#18181B" stroke="#3F3F46" stroke-width="1.5"/>',
-        '  <!-- Textes courbés -->',
         '  <text fill="#F8FAFC" font-family="Arial Black, Impact, sans-serif" font-size="20.5" font-weight="900" letter-spacing="1.2">',
         '    <textPath href="#arc-top" startOffset="50%" text-anchor="middle">GENDARMERIE NATIONALE</textPath>',
         '  </text>',
         '  <text fill="#F8FAFC" font-family="Arial Black, Impact, sans-serif" font-size="18.5" font-weight="900" letter-spacing="1">',
         '    <textPath href="#arc-bot" startOffset="50%" text-anchor="middle">CELLULE SECOURISME GGD85</textPath>',
         '  </text>',
-        '  <!-- Grenades blanches latérales à 9h et 3h -->',
         '  <g fill="#F8FAFC">',
         '    <ellipse cx="26" cy="158" rx="4.5" ry="5.5"/>',
         '    <path d="M26,151 C22,145 19,141 20,136 C22,139 24,142 25,144 C24,138 23,133 26,129 C29,133 28,138 27,144 C28,142 30,139 32,136 C33,141 30,145 26,151 Z"/>',
         '    <ellipse cx="274" cy="158" rx="4.5" ry="5.5"/>',
         '    <path d="M274,151 C270,145 267,141 268,136 C270,139 272,142 273,144 C272,138 271,133 274,129 C277,133 276,138 275,144 C276,142 278,139 280,136 C281,141 278,145 274,151 Z"/>',
         '  </g>',
-        '  <!-- Disque central illustré -->',
         '  <g clip-path="url(#inner-disc)">',
-        '    <!-- Ciel bleu clair -->',
         '    <rect x="45" y="45" width="210" height="210" fill="#82C2E6"/>',
         '    <line x1="45" y1="108" x2="255" y2="108" stroke="#1E293B" stroke-width="1"/>',
-        '    <!-- Bocage vendéen à gauche -->',
         '    <path d="M45,138 Q95,134 148,145 L148,255 L45,255 Z" fill="#65A30D" stroke="#1E293B" stroke-width="1.3"/>',
         '    <path d="M45,165 Q88,158 128,175 Q95,192 45,195 Z" fill="#84CC16" stroke="#1E293B" stroke-width="1"/>',
         '    <path d="M45,198 Q82,194 125,215 L125,255 L45,255 Z" fill="#22C55E" stroke="#1E293B" stroke-width="1.2"/>',
-        '    <!-- Chemin ocre -->',
         '    <path d="M88,242 Q108,225 130,214 L137,221 Q115,233 98,249 Z" fill="#EAB308" stroke="#1E293B" stroke-width="1"/>',
-        '    <!-- Château fort à gauche -->',
         '    <g fill="#B4B8BF" stroke="#1E293B" stroke-width="1.2">',
         '      <path d="M52,140 L63,124 L85,124 L94,140 Z" fill="#9CA3AF"/>',
         '      <rect x="57" y="109" width="8" height="17"/>',
         '      <rect x="65" y="114" width="10" height="12"/>',
         '      <rect x="75" y="107" width="8" height="19"/>',
         '    </g>',
-        '    <!-- Lion silhouette -->',
         '    <ellipse cx="105" cy="147" rx="6" ry="3" fill="#1E293B"/>',
         '    <circle cx="111" cy="145" r="2.5" fill="#1E293B"/>',
-        '    <!-- Mer océan à droite -->',
         '    <path d="M148,136 L255,136 L255,255 L148,255 Z" fill="#2563EB" stroke="#1E293B" stroke-width="1.3"/>',
         '    <path d="M168,214 Q190,196 212,212 Q226,220 242,208" fill="none" stroke="#BAE6FD" stroke-width="2.5" stroke-linecap="round"/>',
         '    <path d="M162,226 Q188,212 208,226 Q224,234 238,222" fill="none" stroke="#E0F2FE" stroke-width="2" stroke-linecap="round"/>',
-        '    <!-- Phare et voilier -->',
         '    <g stroke="#1E293B" stroke-width="1.2">',
         '      <polygon points="233,134 236,110 241,110 244,134" fill="#E2E8F0"/>',
         '      <rect x="235" y="105" width="7" height="5" fill="#EF4444"/>',
@@ -746,40 +743,31 @@
         '      <polygon points="201,154 201,132 189,154" fill="#E2E8F0"/>',
         '      <path d="M187,156 L221,156 L216,162 L192,162 Z" fill="#CBD5E1"/>',
         '    </g>',
-        '    <!-- Fontaine en pierre en bas au centre -->',
         '    <g stroke="#1E293B" stroke-width="1.2">',
         '      <rect x="125" y="232" width="50" height="18" fill="#D97706"/>',
         '      <path d="M136,246 L136,216 A14,14 0 0,1 164,216 L164,246 Z" fill="#D97706"/>',
         '      <path d="M141,246 L141,218 A9,9 0 0,1 159,218 L159,246 Z" fill="#60A5FA"/>',
         '      <rect x="134" y="244" width="32" height="7" rx="2" fill="#CBD5E1"/>',
         '    </g>',
-        '    <!-- Emblème métallique argenté -->',
         '    <g fill="url(#silver-grad)" stroke="#1E293B" stroke-width="1.6" stroke-linejoin="round">',
-        '      <!-- Anneau ovale -->',
         '      <path d="M84,158 C84,114 216,114 216,158 C216,196 184,212 150,212 C116,212 84,196 84,158 Z M94,158 C94,188 122,202 150,202 C178,202 206,188 206,158 C206,124 94,124 94,158 Z"/>',
-        '      <!-- Masse et épée croisées -->',
         '      <polygon points="103,115 113,107 195,184 187,192"/>',
         '      <circle cx="106" cy="110" r="9"/>',
         '      <polygon points="196,115 188,107 105,184 113,192"/>',
         '      <rect x="184" y="109" width="22" height="6" rx="2" transform="rotate(42 195 112)"/>',
-        '      <!-- Triangle évidé -->',
         '      <polygon points="150,104 102,188 198,188"/>',
         '      <polygon points="150,127 122,176 178,176" fill="#82C2E6"/>',
-        '      <!-- Lauriers et poignée de main -->',
         '      <path d="M72,162 C78,194 108,212 138,216 L142,206 C116,202 92,186 84,160 Z"/>',
         '      <path d="M228,162 C222,194 192,212 162,216 L158,206 C184,202 208,186 216,160 Z"/>',
         '      <rect x="131" y="195" width="38" height="20" rx="9"/>',
-        '      <!-- Grande grenade centrale -->',
         '      <ellipse cx="150" cy="183" rx="11" ry="13"/>',
         '      <path d="M150,170 C138,158 131,146 135,134 C140,141 144,148 146,154 C143,139 143,124 150,113 C157,124 157,139 154,154 C156,148 160,141 165,134 C169,146 162,158 150,170 Z"/>',
         '    </g>',
-        '    <!-- Double cœur vendéen couronné -->',
         '    <g stroke="#1E293B" stroke-width="1.5" stroke-linejoin="round">',
         '      <path d="M144,108 L128,93 A11,11 0 0,1 144,78 A11,11 0 0,1 160,93 Z" fill="#DC2626"/>',
         '      <path d="M144,101 L133,91 A7,7 0 0,1 144,82 A7,7 0 0,1 155,91 Z" fill="#9CA3AF"/>',
         '      <path d="M156,108 L140,93 A11,11 0 0,1 156,78 A11,11 0 0,1 172,93 Z" fill="#DC2626"/>',
         '      <path d="M156,101 L145,91 A7,7 0 0,1 156,82 A7,7 0 0,1 167,91 Z" fill="#9CA3AF"/>',
-        '      <!-- Couronne et croix -->',
         '      <polygon points="139,74 136,61 144,66 150,59 156,66 164,61 161,74" fill="#DC2626"/>',
         '      <path d="M148,59 L148,53 L144,53 L144,49 L148,49 L148,45 L152,45 L152,49 L156,49 L156,53 L152,53 L152,59 Z" fill="#DC2626"/>',
         '    </g>',
@@ -926,7 +914,6 @@
             }
           ],
           alerts: [],
-          /* Note : aucun code d'accès sensible n'est stocké dans l'application web */
           sites: [
             {
               id: "site-ggd85",
@@ -1012,7 +999,8 @@
       var realtimeChannel = null;
       var currentUser = null;
       var offlineBypass = false;
-      var syncStatus = "offline"; // "online" | "syncing" | "offline" | "error"
+      var passwordRecoveryMode = false;
+      var syncStatus = "offline";
       var syncErrorMessage = "";
       var saveDebounceTimer = null;
 
@@ -1084,6 +1072,13 @@
         }
         try {
           supabaseClient = window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey);
+          supabaseClient.auth.onAuthStateChange(function (event, session) {
+            if (event === "PASSWORD_RECOVERY") {
+              passwordRecoveryMode = true;
+              currentUser = session ? session.user : currentUser;
+              renderApp();
+            }
+          });
           return true;
         } catch (e) {
           supabaseClient = null;
@@ -1307,9 +1302,37 @@
       }, 250);
 
       /* =====================================================================
-         7. RENDU DE L'ÉCRAN D'AUTHENTIFICATION SUPABASE
+         7. RENDU DE L'ÉCRAN D'AUTHENTIFICATION & RÉINITIALISATION MOT DE PASSE
          ===================================================================== */
+      function renderPasswordRecoveryScreen() {
+        var root = document.getElementById("app-root");
+        root.innerHTML =
+          '<div class="auth-screen">' +
+          '  <div class="auth-card">' +
+          '    <div class="auth-logo">' + getLogoMarkup() + "</div>" +
+          '    <div style="text-align:center;margin-bottom:16px;">' +
+          '      <div class="brand-kicker">Cellule Secourisme GGD85</div>' +
+          '      <h1 style="margin:4px 0;font-size:19px;font-weight:900;">Nouveau mot de passe</h1>' +
+          '      <p class="muted" style="margin:0;">Choisissez un nouveau mot de passe d’au moins 6 caractères.</p>' +
+          "    </div>" +
+          '    <form id="supabase-new-password-form">' +
+          '      <label for="new-pass-1">Nouveau mot de passe</label>' +
+          '      <input type="password" id="new-pass-1" required minlength="6" placeholder="••••••••" autocomplete="new-password" />' +
+          '      <label for="new-pass-2">Confirmer le mot de passe</label>' +
+          '      <input type="password" id="new-pass-2" required minlength="6" placeholder="••••••••" autocomplete="new-password" />' +
+          '      <div id="recovery-error" class="alert-box hidden" style="margin-bottom:10px;"></div>' +
+          '      <button type="submit" class="btn btn-success" style="width:100%;padding:11px;">Enregistrer et accéder à l’application</button>' +
+          "    </form>" +
+          "  </div>" +
+          "</div>";
+      }
+
       function renderAuthScreen() {
+        if (passwordRecoveryMode) {
+          renderPasswordRecoveryScreen();
+          return;
+        }
+
         var root = document.getElementById("app-root");
         var configured = isSupabaseConfigured();
 
@@ -1329,7 +1352,11 @@
               '  <label for="login-pass">Mot de passe</label>' +
               '  <input type="password" id="login-pass" required placeholder="••••••••" autocomplete="current-password" />' +
               '  <div id="login-error" class="alert-box hidden" style="margin-bottom:10px;"></div>' +
+              '  <div id="login-info" class="info-box hidden" style="margin-bottom:10px;"></div>' +
               '  <button type="submit" class="btn btn-primary" style="width:100%;padding:11px;">Se connecter</button>' +
+              '  <div style="text-align:center;margin-top:10px;">' +
+              '    <button type="button" data-action="forgot-password" style="background:none;border:none;color:#93C5FD;font-size:12.5px;font-weight:700;cursor:pointer;text-decoration:underline;">Mot de passe oublié ?</button>' +
+              "  </div>" +
               "</form>"
             : '<div class="alert-box" style="background:rgba(245,158,11,0.12);border-color:rgba(245,158,11,0.45);color:#FDE68A;margin-bottom:12px;">' +
               "  <strong>Connexion Supabase non initialisée :</strong> vérifiez votre connexion réseau ou renseignez vos paramètres Supabase." +
@@ -1355,6 +1382,10 @@
          8. RENDU PRINCIPAL DE L'APPLICATION
          ===================================================================== */
       function renderApp() {
+        if (passwordRecoveryMode) {
+          renderPasswordRecoveryScreen();
+          return;
+        }
         if (!currentUser && !offlineBypass) {
           renderAuthScreen();
           return;
@@ -1559,7 +1590,7 @@
       }
 
       /* =====================================================================
-         10. ONGLET 2 : SITES DE FORMATION (SANS CODES SENSIBLES)
+         10. ONGLET 2 : SITES DE FORMATION
          ===================================================================== */
       function renderSitesTab() {
         var html =
@@ -1795,7 +1826,6 @@
           "  </div>" +
           "</div>" +
 
-          /* Bloc Supabase */
           '<div class="card">' +
           '  <h3 style="margin:0 0 8px;font-size:16px;">Synchronisation multi-utilisateurs (Supabase)</h3>' +
           '  <p class="muted" style="margin:0 0 10px;">' +
@@ -1816,7 +1846,6 @@
           "  </form>" +
           "</div>" +
 
-          /* Bloc Logo Rondache */
           '<div class="card">' +
           '  <h3 style="margin:0 0 8px;font-size:16px;">Rondache de la cellule</h3>' +
           '  <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">' +
@@ -1828,7 +1857,6 @@
           "  </div>" +
           "</div>" +
 
-          /* Bloc Scénarios personnalisés */
           '<div class="card">' +
           '  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;">' +
           '    <h3 style="margin:0;font-size:16px;">Mes scénarios MES (' + localState.scenarios.length + ")</h3>" +
@@ -1850,7 +1878,6 @@
         });
         html += "</div>" +
 
-          /* Bloc Étapes clés chronomètre */
           '<div class="card">' +
           '  <h3 style="margin:0 0 8px;font-size:16px;">Étapes clés du chronomètre (Top Chrono)</h3>' +
           '  <div style="display:flex;gap:8px;margin-bottom:10px;">' +
@@ -1867,7 +1894,6 @@
           "  </div>" +
           "</div>" +
 
-          /* Bloc Sauvegarde JSON */
           '<div class="card">' +
           '  <h3 style="margin:0 0 8px;font-size:16px;">Sauvegarde & Export</h3>' +
           '  <div style="display:flex;flex-wrap:wrap;gap:8px;">' +
@@ -2059,6 +2085,45 @@
         if (action === "close-modal") { closeModal(); return; }
         if (action === "close-modal-backdrop" && e.target === target) { closeModal(); return; }
 
+        if (action === "forgot-password") {
+          var emailInput = document.getElementById("login-email");
+          var errBox = document.getElementById("login-error");
+          var infoBox = document.getElementById("login-info");
+          if (errBox) errBox.classList.add("hidden");
+          if (infoBox) infoBox.classList.add("hidden");
+
+          var emailVal = emailInput ? emailInput.value.trim() : "";
+          if (!emailVal) {
+            if (errBox) {
+              errBox.textContent = "Saisissez d'abord votre adresse e-mail formateur ci-dessus, puis cliquez sur Mot de passe oublié.";
+              errBox.classList.remove("hidden");
+            }
+            if (emailInput) emailInput.focus();
+            return;
+          }
+          if (!supabaseClient && !initSupabaseClient()) {
+            if (errBox) {
+              errBox.textContent = "Client Supabase non initialisé.";
+              errBox.classList.remove("hidden");
+            }
+            return;
+          }
+          var redirectUrl = window.location.origin + window.location.pathname;
+          var resetRes = await supabaseClient.auth.resetPasswordForEmail(emailVal, {
+            redirectTo: redirectUrl
+          });
+          if (resetRes.error) {
+            if (errBox) {
+              errBox.textContent = "Impossible d'envoyer le lien : " + resetRes.error.message;
+              errBox.classList.remove("hidden");
+            }
+          } else if (infoBox) {
+            infoBox.textContent = "Un lien de réinitialisation a été envoyé à " + emailVal + " (vérifiez vos courriers indésirables).";
+            infoBox.classList.remove("hidden");
+          }
+          return;
+        }
+
         if (action === "open-sb-config-modal") {
           openModal(
             "Configuration Supabase",
@@ -2091,6 +2156,7 @@
           if (supabaseClient) await supabaseClient.auth.signOut();
           currentUser = null;
           offlineBypass = false;
+          passwordRecoveryMode = false;
           try { localStorage.removeItem(OFFLINE_MODE_KEY); } catch (err) {}
           renderApp();
           return;
@@ -2565,6 +2631,28 @@
         var form = e.target;
         if (!form || !form.id) return;
         e.preventDefault();
+
+        if (form.id === "supabase-new-password-form") {
+          var p1 = document.getElementById("new-pass-1").value;
+          var p2 = document.getElementById("new-pass-2").value;
+          var recErr = document.getElementById("recovery-error");
+          if (p1 !== p2) {
+            recErr.textContent = "Les deux mots de passe ne correspondent pas.";
+            recErr.classList.remove("hidden");
+            return;
+          }
+          var updRes = await supabaseClient.auth.updateUser({ password: p1 });
+          if (updRes.error) {
+            recErr.textContent = "Erreur : " + updRes.error.message;
+            recErr.classList.remove("hidden");
+            return;
+          }
+          passwordRecoveryMode = false;
+          currentUser = updRes.data.user;
+          showToast("Mot de passe mis à jour");
+          await pullAndSubscribeSupabase();
+          return;
+        }
 
         if (form.id === "supabase-quick-cfg-form" || form.id === "settings-sb-form") {
           var uEl = form.querySelector("input[type='url']");
