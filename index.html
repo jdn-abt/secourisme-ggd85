@@ -33,6 +33,8 @@
       --green-soft: rgba(34, 197, 94, 0.16);
       --amber: #F59E0B;
       --amber-soft: rgba(245, 158, 11, 0.16);
+      --purple: #A855F7;
+      --purple-soft: rgba(168, 85, 247, 0.16);
       --text: #F8FAFC;
       --text-muted: #94A3B8;
       --text-dim: #64748B;
@@ -144,6 +146,20 @@
     .sync-pill.online { color: #86EFAC; border-color: rgba(34, 197, 94, 0.35); }
     .sync-pill.error .sync-dot { background: var(--red); }
     .sync-pill.error { color: #FCA5A5; border-color: rgba(239, 68, 68, 0.35); }
+
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-size: 10.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .role-admin { background: var(--gold-soft); color: #FDE047; border: 1px solid rgba(234, 179, 8, 0.45); }
+    .role-referent { background: var(--purple-soft); color: #D8B4FE; border: 1px solid rgba(168, 85, 247, 0.45); }
+    .role-user { background: var(--blue-soft); color: #93C5FD; border: 1px solid rgba(59, 130, 246, 0.35); }
 
     .header-actions {
       display: flex;
@@ -344,25 +360,24 @@
       margin-bottom: 14px;
       overflow: hidden;
     }
-    .master-header {
-      width: 100%;
+    .master-header-bar {
       background: linear-gradient(90deg, rgba(11,30,61,0.9), rgba(22,31,48,0.95));
-      border: none;
       border-bottom: 1px solid var(--border);
-      color: var(--text);
-      padding: 14px 15px;
+      padding: 12px 15px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      cursor: pointer;
-      text-align: left;
+      flex-wrap: wrap;
     }
-    .master-title-wrap {
+    .master-toggle-area {
       display: flex;
       align-items: center;
       gap: 10px;
       flex-wrap: wrap;
+      cursor: pointer;
+      flex: 1;
+      min-width: 180px;
     }
     .sector-pill {
       padding: 3px 9px;
@@ -418,6 +433,7 @@
       align-items: center;
       gap: 5px;
     }
+    .status-badge.readonly { cursor: default; opacity: 0.92; }
     .st-ready { background: var(--green-soft); color: #86EFAC; border-color: rgba(34, 197, 94, 0.35); }
     .st-incomplete { background: var(--red-soft); color: #FCA5A5; border-color: rgba(239, 68, 68, 0.4); }
     .st-avail { background: var(--blue-soft); color: #93C5FD; border-color: rgba(59, 130, 246, 0.35); }
@@ -670,27 +686,30 @@
   <div id="modal-root"></div>
   <div id="toast-box" class="toast hidden"></div>
 
-  <!-- Client officiel Supabase JS v2 (avec repli hors-ligne automatique si indisponible) -->
+  <!-- Client officiel Supabase JS v2 -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     (function () {
       "use strict";
 
       /* =====================================================================
-         1. CONFIGURATION SUPABASE PRÉ-RENSEIGNÉE (CLÉ PUBLIQUE UNIQUEMENT)
+         1. CONFIGURATION SUPABASE & COMPTE ADMINISTRATEUR PRINCIPAL
          ===================================================================== */
       var DEFAULT_SUPABASE_CONFIG = {
         url: "https://netekovsujfmozihawjc.supabase.co",
         anonKey: "sb_publishable_N90rr5ll-Ds9HhVM9TR3ow_ff-tEVxy"
       };
 
-      var STORAGE_KEY = "ggd85_secourisme_supabase_v1";
+      /* E-mail administrateur principal (garantit l'accès admin même au 1er lancement) */
+      var PRIMARY_ADMIN_EMAIL = "jdn.abt@gmail.com";
+
+      var STORAGE_KEY = "ggd85_secourisme_supabase_v2";
       var SB_CFG_KEY = "ggd85_supabase_cfg_v1";
       var OFFLINE_MODE_KEY = "ggd85_offline_bypass_v1";
-      var VERIFIED_USER_KEY = "ggd85_verified_trainer_v1";
+      var VERIFIED_USER_KEY = "ggd85_verified_trainer_v2";
 
       /* =====================================================================
-         2. RONDACHE OFFICIELLE GGD85 (SVG HAUTE PRÉCISION FIDÈLE À LA PHOTO)
+         2. RONDACHE OFFICIELLE GGD85 (SVG HAUTE PRÉCISION)
          ===================================================================== */
       var RONDACHE_SVG = [
         '<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" aria-label="Rondache Cellule Secourisme GGD85">',
@@ -777,12 +796,22 @@
       ].join("");
 
       /* =====================================================================
-         3. DONNÉES INITIALES (LOTS, SITES, SCÉNARIOS, ÉTAPES CHRONO)
+         3. DONNÉES INITIALES (LOTS, SITES, UTILISATEURS/RÔLES, SCÉNARIOS)
          ===================================================================== */
       function createDefaultSharedData() {
         return {
           updatedAt: new Date().toISOString(),
           updatedBy: "Cellule GGD85",
+          users: [
+            {
+              id: "usr-admin-1",
+              email: PRIMARY_ADMIN_EMAIL,
+              name: "Administrateur Cellule GGD85",
+              role: "admin",
+              active: true,
+              createdAt: new Date().toISOString()
+            }
+          ],
           masterLots: [
             {
               id: "lot-lrsy",
@@ -993,7 +1022,7 @@
       }
 
       /* =====================================================================
-         4. ÉTAT GLOBAL & CLIENT SUPABASE
+         4. ÉTAT GLOBAL, RÔLES & PERMISSIONS
          ===================================================================== */
       var supabaseConfig = loadSupabaseConfig();
       var supabaseClient = null;
@@ -1009,6 +1038,93 @@
       var sharedState = createDefaultSharedData();
       var localState = loadLocalState();
 
+      function normalizeSharedState(raw) {
+        var base = createDefaultSharedData();
+        var merged = Object.assign(base, raw || {});
+        if (!Array.isArray(merged.users)) merged.users = base.users.slice();
+        if (!Array.isArray(merged.masterLots)) merged.masterLots = base.masterLots.slice();
+        if (!Array.isArray(merged.alerts)) merged.alerts = [];
+        if (!Array.isArray(merged.sites)) merged.sites = base.sites.slice();
+
+        var hasPrimary = merged.users.some(function (u) {
+          return (u.email || "").toLowerCase() === PRIMARY_ADMIN_EMAIL.toLowerCase();
+        });
+        if (!hasPrimary) {
+          merged.users.unshift({
+            id: "usr-admin-1",
+            email: PRIMARY_ADMIN_EMAIL,
+            name: "Administrateur Cellule GGD85",
+            role: "admin",
+            active: true,
+            createdAt: new Date().toISOString()
+          });
+        }
+        return merged;
+      }
+
+      sharedState = normalizeSharedState(sharedState);
+
+      function getCurrentEmail() {
+        if (currentUser && currentUser.email) return currentUser.email.toLowerCase().trim();
+        if (verifiedTrainer && verifiedTrainer.email) return verifiedTrainer.email.toLowerCase().trim();
+        return "";
+      }
+
+      function getCurrentUserRecord() {
+        var email = getCurrentEmail();
+        if (!email) return null;
+        return (sharedState.users || []).find(function (u) {
+          return (u.email || "").toLowerCase().trim() === email;
+        }) || null;
+      }
+
+      function getCurrentRole() {
+        var email = getCurrentEmail();
+        if (!email) return "user";
+        if (email === PRIMARY_ADMIN_EMAIL.toLowerCase()) return "admin";
+        var rec = getCurrentUserRecord();
+        if (rec && rec.role) return rec.role;
+        if (currentUser && currentUser.user_metadata && currentUser.user_metadata.role) {
+          return currentUser.user_metadata.role;
+        }
+        if (verifiedTrainer && verifiedTrainer.role) {
+          return verifiedTrainer.role;
+        }
+        return "user";
+      }
+
+      function isUserSuspended() {
+        var email = getCurrentEmail();
+        if (!email || email === PRIMARY_ADMIN_EMAIL.toLowerCase()) return false;
+        var rec = getCurrentUserRecord();
+        return Boolean(rec && rec.active === false);
+      }
+
+      function canManageUsers() {
+        return getCurrentRole() === "admin" && !isUserSuspended();
+      }
+
+      function canManageLotsAndSites() {
+        var r = getCurrentRole();
+        return (r === "admin" || r === "referent") && !isUserSuspended();
+      }
+
+      function canReportAlert() {
+        return !isUserSuspended();
+      }
+
+      function getRoleLabel(role) {
+        if (role === "admin") return "Administrateur";
+        if (role === "referent") return "Référent";
+        return "Utilisateur";
+      }
+
+      function getRoleBadgeHtml(role) {
+        if (role === "admin") return '<span class="role-badge role-admin">Administrateur</span>';
+        if (role === "referent") return '<span class="role-badge role-referent">Référent</span>';
+        return '<span class="role-badge role-user">Utilisateur</span>';
+      }
+
       function loadVerifiedTrainer() {
         try {
           var raw = localStorage.getItem(VERIFIED_USER_KEY);
@@ -1021,9 +1137,18 @@
 
       function saveVerifiedTrainer(user) {
         if (!user || !user.email) return;
+        var emailLower = user.email.toLowerCase().trim();
+        var rec = (sharedState.users || []).find(function (u) {
+          return (u.email || "").toLowerCase().trim() === emailLower;
+        });
+        var resolvedRole = emailLower === PRIMARY_ADMIN_EMAIL.toLowerCase()
+          ? "admin"
+          : (rec && rec.role) || (user.user_metadata && user.user_metadata.role) || "user";
+
         verifiedTrainer = {
           email: user.email,
-          fullName: (user.user_metadata && user.user_metadata.full_name) || user.email,
+          fullName: (rec && rec.name) || (user.user_metadata && user.user_metadata.full_name) || user.email,
+          role: resolvedRole,
           lastAuthAt: new Date().toISOString()
         };
         try {
@@ -1060,7 +1185,7 @@
           if (!raw) return def;
           var parsed = JSON.parse(raw);
           if (parsed.sharedFallback) {
-            sharedState = Object.assign(createDefaultSharedData(), parsed.sharedFallback);
+            sharedState = normalizeSharedState(parsed.sharedFallback);
           }
           if (parsed.local) {
             return Object.assign(def, parsed.local);
@@ -1119,7 +1244,8 @@
         syncStatus = "syncing";
         updateSyncBadgeUI();
 
-        var author = (currentUser.user_metadata && currentUser.user_metadata.full_name) || currentUser.email || "Formateur";
+        var rec = getCurrentUserRecord();
+        var author = (rec && rec.name) || (currentUser.user_metadata && currentUser.user_metadata.full_name) || currentUser.email || "Formateur";
         sharedState.updatedAt = new Date().toISOString();
         sharedState.updatedBy = author;
 
@@ -1166,7 +1292,8 @@
           if (res.error) throw res.error;
 
           if (res.data && res.data.data) {
-            sharedState = Object.assign(createDefaultSharedData(), res.data.data);
+            sharedState = normalizeSharedState(res.data.data);
+            saveVerifiedTrainer(currentUser);
             persistLocalOnly();
           } else {
             await pushSharedStateToSupabase();
@@ -1183,7 +1310,8 @@
               { event: "*", schema: "public", table: "cellule_etat", filter: "id=eq.ggd85_main" },
               function (payload) {
                 if (payload.new && payload.new.data) {
-                  sharedState = Object.assign(createDefaultSharedData(), payload.new.data);
+                  sharedState = normalizeSharedState(payload.new.data);
+                  if (currentUser) saveVerifiedTrainer(currentUser);
                   persistLocalOnly();
                   syncStatus = "online";
                   renderApp();
@@ -1247,7 +1375,7 @@
         clearTimeout(el._t);
         el._t = setTimeout(function () {
           el.classList.add("hidden");
-        }, 2600);
+        }, 2800);
       }
 
       function getLogoMarkup() {
@@ -1297,7 +1425,7 @@
       }
 
       /* =====================================================================
-         6. CHRONOMÈTRES MES (BASÉS SUR Date.now() SANS DÉRIVE)
+         6. CHRONOMÈTRES MES
          ===================================================================== */
       function getMesElapsedMs(mes) {
         var base = mes.elapsedMs || 0;
@@ -1327,7 +1455,7 @@
       }, 250);
 
       /* =====================================================================
-         7. RENDU DE L'ÉCRAN D'AUTHENTIFICATION & RÉINITIALISATION MOT DE PASSE
+         7. ÉCRANS D'AUTHENTIFICATION, RÉCUPÉRATION & COMPTE SUSPENDU
          ===================================================================== */
       function renderPasswordRecoveryScreen() {
         var root = document.getElementById("app-root");
@@ -1348,6 +1476,20 @@
           '      <div id="recovery-error" class="alert-box hidden" style="margin-bottom:10px;"></div>' +
           '      <button type="submit" class="btn btn-success" style="width:100%;padding:11px;">Enregistrer et accéder à l’application</button>' +
           "    </form>" +
+          "  </div>" +
+          "</div>";
+      }
+
+      function renderSuspendedScreen() {
+        var root = document.getElementById("app-root");
+        root.innerHTML =
+          '<div class="auth-screen">' +
+          '  <div class="auth-card" style="text-align:center;">' +
+          '    <div class="auth-logo">' + getLogoMarkup() + "</div>" +
+          '    <div class="brand-kicker">Cellule Secourisme GGD85</div>' +
+          '    <h1 style="margin:6px 0 8px;font-size:19px;font-weight:900;color:#FCA5A5;">Accès suspendu</h1>' +
+          '    <p class="muted" style="margin:0 0 16px;">Le profil associé à <strong>' + escapeHtml(getCurrentEmail()) + "</strong> a été désactivé par l'administrateur de la cellule.</p>" +
+          '    <button type="button" class="btn btn-ghost" style="width:100%;" data-action="logout">Se déconnecter</button>' +
           "  </div>" +
           "</div>";
       }
@@ -1411,13 +1553,19 @@
           renderAuthScreen();
           return;
         }
+        if (isUserSuspended()) {
+          renderSuspendedScreen();
+          return;
+        }
 
         var root = document.getElementById("app-root");
         var activeAlertsCount = sharedState.alerts.length;
         var runningMesCount = localState.activeMesList.filter(function (m) { return m.running; }).length;
+        var currentRole = getCurrentRole();
+        var userRec = getCurrentUserRecord();
 
         var userLabel = currentUser
-          ? escapeHtml((currentUser.user_metadata && currentUser.user_metadata.full_name) || currentUser.email)
+          ? escapeHtml((userRec && userRec.name) || (currentUser.user_metadata && currentUser.user_metadata.full_name) || currentUser.email)
           : escapeHtml(verifiedTrainer.email) + " (hors-ligne)";
 
         var html =
@@ -1430,6 +1578,7 @@
           '        <div class="brand-title">Cellule Secourisme GGD85</div>' +
           '        <div class="brand-sub">' +
           '          <span id="header-sync-pill" class="sync-pill"><span class="sync-dot"></span><span>...</span></span>' +
+          "          " + getRoleBadgeHtml(currentRole) +
           "          <span>" + userLabel + "</span>" +
           "        </div>" +
           "      </div>" +
@@ -1485,19 +1634,32 @@
       }
 
       /* =====================================================================
-         9. ONGLET 1 : LOTS & MATÉRIEL
+         9. ONGLET 1 : LOTS & MATÉRIEL (DROITS DIFFÉRENCIÉS ADMIN / RÉFÉRENT / USER)
          ===================================================================== */
       function renderLotsTab() {
         var alertsCount = sharedState.alerts.length;
-        var sectors = ["ALL", "LRSY", "LUÇON", "RÉSERVE"];
+        var canEdit = canManageLotsAndSites();
+
+        var sectorSet = { "ALL": true };
+        sharedState.masterLots.forEach(function (m) {
+          if (m.sector) sectorSet[m.sector] = true;
+        });
+        var sectors = Object.keys(sectorSet);
 
         var html =
           '<div class="page-head">' +
           "  <div>" +
           '    <h2 class="page-title">Lots & matériel</h2>' +
-          '    <p class="page-desc">État opérationnel, réservations, inventaires et signalements partagés.</p>' +
+          '    <p class="page-desc">' +
+          (canEdit
+            ? "Gestion complète des lots, états opérationnels, réservations, inventaires et alertes."
+            : "Consultation de l'état des lots et signalement de consommables ou de casse.") +
+          "    </p>" +
           "  </div>" +
-          '  <button type="button" class="btn btn-danger" data-action="open-alert-modal">+ Signaler (Consommable / Casse)</button>' +
+          '  <div style="display:flex;flex-wrap:wrap;gap:8px;">' +
+          (canEdit ? '<button type="button" class="btn btn-primary" data-action="open-master-lot-modal">+ Nouveau lot principal</button>' : "") +
+          '    <button type="button" class="btn btn-danger" data-action="open-alert-modal">+ Signaler (Consommable / Casse)</button>' +
+          "  </div>" +
           "</div>";
 
         if (alertsCount > 0) {
@@ -1515,7 +1677,9 @@
               "    <strong>" + escapeHtml(al.lotLabel) + "</strong> — " + escapeHtml(al.detail) +
               '    <span class="muted"> (' + escapeHtml(al.author || "") + ")</span>" +
               "  </div>" +
-              '  <button type="button" class="btn btn-sm btn-success" data-action="resolve-alert" data-alert-id="' + escapeHtml(al.id) + '">Résolu</button>' +
+              (canEdit
+                ? '<button type="button" class="btn btn-sm btn-success" data-action="resolve-alert" data-alert-id="' + escapeHtml(al.id) + '">Résolu</button>'
+                : '<span class="tag">En attente référent</span>') +
               "</div>";
           });
           html += "</div>";
@@ -1525,13 +1689,21 @@
         sectors.forEach(function (sec) {
           var label = sec === "ALL" ? "Tous les secteurs" : sec;
           var active = localState.lotFilterSector === sec ? " active" : "";
-          html += '<button type="button" class="chip' + active + '" data-action="filter-sector" data-sector="' + sec + '">' + label + "</button>";
+          html += '<button type="button" class="chip' + active + '" data-action="filter-sector" data-sector="' + escapeHtml(sec) + '">' + escapeHtml(label) + "</button>";
         });
         html +=
           '<button type="button" class="chip chip-alert' + (localState.lotFilterAlertsOnly ? " active" : "") + '" data-action="toggle-filter-alerts">' +
           "Alertes uniquement (" + alertsCount + ")" +
           "</button>" +
           "</div>";
+
+        if (sharedState.masterLots.length === 0) {
+          html +=
+            '<div class="card" style="text-align:center;padding:24px;">' +
+            '  <p class="muted" style="margin:0 0 12px;">Aucun lot configuré pour le moment.</p>' +
+            (canEdit ? '<button type="button" class="btn btn-primary" data-action="open-master-lot-modal">+ Créer un premier lot</button>' : "") +
+            "</div>";
+        }
 
         sharedState.masterLots.forEach(function (mLot) {
           if (localState.lotFilterSector !== "ALL" && mLot.sector !== localState.lotFilterSector) return;
@@ -1541,22 +1713,29 @@
 
           html +=
             '<section class="master-lot">' +
-            '  <button type="button" class="master-header" data-action="toggle-master" data-master-id="' + escapeHtml(mLot.id) + '">' +
-            '    <div class="master-title-wrap">' +
-            '      <span class="sector-pill">' + escapeHtml(mLot.sector) + "</span>" +
+            '  <div class="master-header-bar">' +
+            '    <div class="master-toggle-area" data-action="toggle-master" data-master-id="' + escapeHtml(mLot.id) + '">' +
+            '      <span class="sector-pill">' + escapeHtml(mLot.sector || "SECTEUR") + "</span>" +
             '      <span class="master-name">' + escapeHtml(mLot.name) + "</span>" +
             (masterAlerts.length > 0 ? '<span class="nav-badge badge-red" style="position:static;">' + masterAlerts.length + " alerte(s)</span>" : "") +
+            '      <span class="muted">' + (mLot.expanded ? "▲" : "▼") + "</span>" +
             "    </div>" +
-            '    <span class="muted">' + (mLot.expanded ? "Masquer ▲" : "Afficher ▼") + "</span>" +
-            "  </button>";
+            (canEdit
+              ? '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">' +
+                '  <button type="button" class="btn btn-sm btn-primary" data-action="open-sublot-modal" data-master-id="' + escapeHtml(mLot.id) + '">+ Sous-lot</button>' +
+                '  <button type="button" class="btn btn-sm btn-ghost" data-action="open-master-lot-modal" data-master-id="' + escapeHtml(mLot.id) + '" title="Modifier le lot">Éditer</button>' +
+                '  <button type="button" class="btn btn-sm btn-danger" data-action="delete-master-lot" data-master-id="' + escapeHtml(mLot.id) + '" title="Supprimer ce lot">×</button>' +
+                "</div>"
+              : "") +
+            "  </div>";
 
           if (mLot.expanded) {
             html += '<div class="master-body">';
-            if (mLot.sublots.length === 0) {
+            if (!mLot.sublots || mLot.sublots.length === 0) {
               html +=
                 '<div style="text-align:center;padding:16px;">' +
-                '  <p class="muted" style="margin:0 0 10px;">À venir — Aucun sous-lot configuré dans ' + escapeHtml(mLot.name) + ".</p>" +
-                '  <button type="button" class="btn btn-sm btn-primary" data-action="open-add-sublot" data-master-id="' + escapeHtml(mLot.id) + '">+ Ajouter un sous-lot</button>' +
+                '  <p class="muted" style="margin:0 0 10px;">Aucun sous-lot configuré dans ' + escapeHtml(mLot.name) + ".</p>" +
+                (canEdit ? '<button type="button" class="btn btn-sm btn-primary" data-action="open-sublot-modal" data-master-id="' + escapeHtml(mLot.id) + '">+ Ajouter un sous-lot</button>' : "") +
                 "</div>";
             } else {
               html += '<div class="sublot-grid">';
@@ -1575,12 +1754,19 @@
                   '      <span class="tag">Inventaire : ' + okCount + "/" + totalCount + "</span>" +
                   "    </div>" +
                   '    <div class="status-row" style="margin-top:8px;">' +
-                  '      <button type="button" class="status-badge ' + (sub.ready ? "st-ready" : "st-incomplete") + '" data-action="toggle-sublot-ready" data-master-id="' + escapeHtml(mLot.id) + '" data-sublot-id="' + escapeHtml(sub.id) + '">' +
-                  (sub.ready ? "● Prêt à la formation" : "▲ Incomplet") +
-                  "      </button>" +
-                  '      <button type="button" class="status-badge ' + (sub.reserved ? "st-reserved" : "st-avail") + '" data-action="toggle-sublot-reserved" data-master-id="' + escapeHtml(mLot.id) + '" data-sublot-id="' + escapeHtml(sub.id) + '">' +
-                  (sub.reserved ? "● Réservé" : "● Disponible") +
-                  "      </button>" +
+                  (canEdit
+                    ? '<button type="button" class="status-badge ' + (sub.ready ? "st-ready" : "st-incomplete") + '" data-action="toggle-sublot-ready" data-master-id="' + escapeHtml(mLot.id) + '" data-sublot-id="' + escapeHtml(sub.id) + '">' +
+                      (sub.ready ? "● Prêt à la formation" : "▲ Incomplet") +
+                      "</button>" +
+                      '<button type="button" class="status-badge ' + (sub.reserved ? "st-reserved" : "st-avail") + '" data-action="toggle-sublot-reserved" data-master-id="' + escapeHtml(mLot.id) + '" data-sublot-id="' + escapeHtml(sub.id) + '">' +
+                      (sub.reserved ? "● Réservé" : "● Disponible") +
+                      "</button>"
+                    : '<span class="status-badge readonly ' + (sub.ready ? "st-ready" : "st-incomplete") + '">' +
+                      (sub.ready ? "● Prêt à la formation" : "▲ Incomplet") +
+                      "</span>" +
+                      '<span class="status-badge readonly ' + (sub.reserved ? "st-reserved" : "st-avail") + '">' +
+                      (sub.reserved ? "● Réservé" : "● Disponible") +
+                      "</span>") +
                   "    </div>" +
                   (sub.reserved && (sub.reservedBy || sub.reservedDates)
                     ? '<div class="muted" style="margin-top:7px;">Réservé par <strong>' + escapeHtml(sub.reservedBy || "Formateur") + "</strong>" + (sub.reservedDates ? " (" + escapeHtml(sub.reservedDates) + ")" : "") + "</div>"
@@ -1589,14 +1775,19 @@
                     ? '<div class="alert-box" style="margin-top:8px;">' +
                       subAlerts.map(function (sa) {
                         return '<div class="alert-line"><span><strong>' + escapeHtml(sa.type) + " :</strong> " + escapeHtml(sa.detail) + "</span>" +
-                               '<button type="button" class="btn btn-sm btn-ghost" data-action="resolve-alert" data-alert-id="' + escapeHtml(sa.id) + '">OK</button></div>';
+                               (canEdit ? '<button type="button" class="btn btn-sm btn-ghost" data-action="resolve-alert" data-alert-id="' + escapeHtml(sa.id) + '">OK</button>' : "") +
+                               "</div>";
                       }).join("") +
                       "</div>"
                     : "") +
                   "  </div>" +
                   '  <div class="sublot-actions">' +
-                  '    <button type="button" class="btn btn-sm" data-action="open-inventory" data-master-id="' + escapeHtml(mLot.id) + '" data-sublot-id="' + escapeHtml(sub.id) + '">Inventaire</button>' +
+                  '    <button type="button" class="btn btn-sm" data-action="open-inventory" data-master-id="' + escapeHtml(mLot.id) + '" data-sublot-id="' + escapeHtml(sub.id) + '">' + (canEdit ? "Inventaire" : "Voir inventaire") + "</button>" +
                   '    <button type="button" class="btn btn-sm btn-ghost" data-action="open-alert-modal" data-master-id="' + escapeHtml(mLot.id) + '" data-sublot-id="' + escapeHtml(sub.id) + '">Signaler</button>' +
+                  (canEdit
+                    ? '<button type="button" class="btn btn-sm btn-ghost" data-action="open-sublot-modal" data-master-id="' + escapeHtml(mLot.id) + '" data-sublot-id="' + escapeHtml(sub.id) + '">Renommer</button>' +
+                      '<button type="button" class="btn btn-sm btn-danger" data-action="delete-sublot" data-master-id="' + escapeHtml(mLot.id) + '" data-sublot-id="' + escapeHtml(sub.id) + '" title="Supprimer le sous-lot">×</button>'
+                    : "") +
                   "  </div>" +
                   "</article>";
               });
@@ -1611,16 +1802,21 @@
       }
 
       /* =====================================================================
-         10. ONGLET 2 : SITES DE FORMATION
+         10. ONGLET 2 : SITES DE FORMATION (LECTURE SEULE POUR UTILISATEURS)
          ===================================================================== */
       function renderSitesTab() {
+        var canEdit = canManageLotsAndSites();
         var html =
           '<div class="page-head">' +
           "  <div>" +
           '    <h2 class="page-title">Lieux de formation</h2>' +
-          '    <p class="page-desc">Logistique, récupération des clés, localisation des salles et stockage matériel.</p>' +
+          '    <p class="page-desc">' +
+          (canEdit
+            ? "Logistique, récupération des clés, localisation des salles et stockage matériel."
+            : "Consultation des lieux de formation, accès et stockage matériel.") +
+          "    </p>" +
           "  </div>" +
-          '  <button type="button" class="btn btn-primary" data-action="open-site-modal">+ Ajouter un site</button>' +
+          (canEdit ? '<button type="button" class="btn btn-primary" data-action="open-site-modal">+ Ajouter un site</button>' : "") +
           "</div>";
 
         sharedState.sites.forEach(function (site) {
@@ -1628,7 +1824,12 @@
             '<div class="card">' +
             '  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;">' +
             '    <h3 style="margin:0;font-size:17px;font-weight:800;">' + escapeHtml(site.name) + "</h3>" +
-            '    <button type="button" class="btn btn-sm" data-action="open-site-modal" data-site-id="' + escapeHtml(site.id) + '">Modifier</button>' +
+            (canEdit
+              ? '<div style="display:flex;gap:6px;">' +
+                '  <button type="button" class="btn btn-sm" data-action="open-site-modal" data-site-id="' + escapeHtml(site.id) + '">Modifier</button>' +
+                '  <button type="button" class="btn btn-sm btn-danger" data-action="delete-site" data-site-id="' + escapeHtml(site.id) + '" title="Supprimer ce site">×</button>' +
+                "</div>"
+              : "") +
             "  </div>" +
             '  <div class="grid-2">' +
             '    <div><span class="muted">Clés & accès :</span><br/><strong>' + escapeHtml(site.keys || "Non renseigné") + "</strong></div>" +
@@ -1643,7 +1844,7 @@
       }
 
       /* =====================================================================
-         11. ONGLET 3 : PÉDAGOGIE (SESSION, CONDUITE MES, HISTORIQUE)
+         11. ONGLET 3 : PÉDAGOGIE (ACCESSIBLE À TOUS LES PROFILS ACTIFS)
          ===================================================================== */
       function renderPedagogieTab() {
         var activeCount = localState.activeMesList.length;
@@ -1658,7 +1859,7 @@
           "</div>" +
           '<div class="ped-subtabs">' +
           '  <button type="button" class="ped-subtab' + (localState.pedSubTab === "session" ? " active" : "") + '" data-action="switch-ped-subtab" data-subtab="session">Session & Attribution</button>' +
-          '  <button type="button" class="ped-subtab' + (localState.pedSubTab === "conduite" ? " active" : "") + '" data-action="switch-ped-subtab" data-subtab="conduite">Conduite MES' + (activeCount > 0 ? '<span class="inline-pill">' + activeCount + "</span>" : "") + "</button>" +
+          '  <button type="button" class="ped-subtab' + (localState.pedSubTab === "conduite" ? " active" : "") + '" data-action="switch-ped-subtab" data-subtab="conduite">Conduite MES' + (activeCount > 0 ? '<span class="inline-pill">' + activeCount + "</span>" : "") + "</button>' +
           '  <button type="button" class="ped-subtab' + (localState.pedSubTab === "historique" ? " active" : "") + '" data-action="switch-ped-subtab" data-subtab="historique">Historique' + (histCount > 0 ? '<span class="inline-pill">' + histCount + "</span>" : "") + "</button>" +
           "</div>";
 
@@ -1836,23 +2037,26 @@
       }
 
       /* =====================================================================
-         12. ONGLET 4 : PARAMÈTRES (SESSION FORMATEUR, LOGO, SCÉNARIOS, ÉTAPES, JSON)
+         12. ONGLET 4 : PARAMÈTRES (GESTION UTILISATEURS RÉSERVÉE À L'ADMIN)
          ===================================================================== */
       function renderParametresTab() {
+        var isAdmin = canManageUsers();
+        var currentRole = getCurrentRole();
+
         var html =
           '<div class="page-head">' +
           "  <div>" +
           '    <h2 class="page-title">Paramètres</h2>' +
-          '    <p class="page-desc">Session formateur, identité visuelle, scénarios et étapes chronomètre.</p>' +
+          '    <p class="page-desc">Session formateur, profils, identité visuelle, scénarios et étapes chronomètre.</p>' +
           "  </div>" +
           "</div>" +
 
           '<div class="card">' +
-          '  <h3 style="margin:0 0 8px;font-size:16px;">Session & Synchronisation</h3>' +
+          '  <h3 style="margin:0 0 8px;font-size:16px;">Session & Statut</h3>' +
           '  <p class="muted" style="margin:0 0 12px;">' +
           (currentUser
-            ? "Connecté en tant que <strong>" + escapeHtml(currentUser.email) + "</strong> (accès hors-ligne autorisé sur cet appareil)."
-            : "Mode hors-ligne actif pour <strong>" + escapeHtml(verifiedTrainer ? verifiedTrainer.email : "") + "</strong>.") +
+            ? "Connecté en tant que <strong>" + escapeHtml(currentUser.email) + "</strong> • Profil : <strong>" + getRoleLabel(currentRole) + "</strong>."
+            : "Mode hors-ligne actif pour <strong>" + escapeHtml(verifiedTrainer ? verifiedTrainer.email : "") + "</strong> • Profil : <strong>" + getRoleLabel(currentRole) + "</strong>.") +
           (syncErrorMessage ? ' <span style="color:#FCA5A5;">(' + escapeHtml(syncErrorMessage) + ")</span>" : "") +
           "  </p>" +
           '  <div style="display:flex;flex-wrap:wrap;gap:8px;">' +
@@ -1863,8 +2067,41 @@
             ? '<button type="button" class="btn btn-danger btn-sm" data-action="forget-device">Oublier cet appareil</button>'
             : "") +
           "  </div>" +
-          "</div>" +
+          "</div>";
 
+        if (isAdmin) {
+          html +=
+            '<div class="card" style="border-color:rgba(234,179,8,0.4);">' +
+            '  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;flex-wrap:wrap;">' +
+            '    <div>' +
+            '      <h3 style="margin:0;font-size:16px;color:var(--gold);">Gestion des profils & habilitations (' + (sharedState.users || []).length + ")</h3>" +
+            '      <p class="muted" style="margin:3px 0 0;">Définissez le rôle de chaque formateur ici, puis créez ou supprimez l’identifiant correspondant dans <strong>Supabase → Authentication → Users</strong>.</p>' +
+            "    </div>" +
+            '    <button type="button" class="btn btn-sm btn-primary" data-action="open-user-modal">+ Ajouter un profil</button>' +
+            "  </div>";
+
+          (sharedState.users || []).forEach(function (u) {
+            var isPrimary = (u.email || "").toLowerCase() === PRIMARY_ADMIN_EMAIL.toLowerCase();
+            var isActive = u.active !== false;
+            html +=
+              '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--border);flex-wrap:wrap;">' +
+              "  <div style=\"min-width:200px;\">" +
+              "    <strong>" + escapeHtml(u.name || u.email) + "</strong> " + getRoleBadgeHtml(u.role) +
+              (!isActive ? ' <span class="tag" style="background:var(--red-soft);color:#FCA5A5;">Suspendu</span>' : "") +
+              '    <div class="muted">' + escapeHtml(u.email) + "</div>" +
+              "  </div>" +
+              '  <div style="display:flex;gap:6px;flex-wrap:wrap;">' +
+              '    <button type="button" class="btn btn-sm" data-action="open-user-modal" data-user-id="' + escapeHtml(u.id) + '">Modifier</button>' +
+              (!isPrimary
+                ? '<button type="button" class="btn btn-sm btn-danger" data-action="delete-user" data-user-id="' + escapeHtml(u.id) + '">Supprimer</button>'
+                : '<span class="tag">Admin principal</span>') +
+              "  </div>" +
+              "</div>";
+          });
+          html += "</div>";
+        }
+
+        html +=
           '<div class="card">' +
           '  <h3 style="margin:0 0 8px;font-size:16px;">Rondache de la cellule</h3>' +
           '  <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">' +
@@ -1946,7 +2183,74 @@
         if (root) root.innerHTML = "";
       }
 
+      function showUserModal(userId) {
+        if (!canManageUsers()) return;
+        var u = userId ? (sharedState.users || []).find(function (x) { return x.id === userId; }) : null;
+        var isPrimary = u && (u.email || "").toLowerCase() === PRIMARY_ADMIN_EMAIL.toLowerCase();
+
+        openModal(
+          u ? "Modifier le profil formateur" : "Ajouter un profil formateur",
+          '<form id="user-profile-form" data-user-id="' + escapeHtml(userId || "") + '">' +
+          "  <label>Grade & Nom affiché</label>" +
+          '  <input type="text" id="usr-name" required value="' + escapeHtml(u ? u.name : "") + '" placeholder="Ex: Gend. Dupont" />' +
+          "  <label>Adresse e-mail de connexion (identique à Supabase Auth)</label>" +
+          '  <input type="email" id="usr-email" required ' + (isPrimary ? "readonly " : "") + 'value="' + escapeHtml(u ? u.email : "") + '" placeholder="prenom.nom@exemple.fr" />' +
+          "  <label>Statut / Habilitation</label>" +
+          '  <select id="usr-role" ' + (isPrimary ? "disabled" : "") + ">" +
+          '    <option value="user"' + (!u || u.role === "user" ? " selected" : "") + ">Utilisateur (consultation lots/sites, signalement casse, pédagogie)</option>" +
+          '    <option value="referent"' + (u && u.role === "referent" ? " selected" : "") + ">Référent (gestion complète lots, inventaires, réservations, sites et pédagogie)</option>" +
+          '    <option value="admin"' + (u && u.role === "admin" ? " selected" : "") + ">Administrateur (accès complet + gestion des profils)</option>" +
+          "  </select>" +
+          (!isPrimary
+            ? '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:14px;">' +
+              '  <input type="checkbox" id="usr-active"' + (!u || u.active !== false ? " checked" : "") + ' style="width:auto;margin:0;" />' +
+              "  <span>Compte autorisé à accéder à l'application</span>" +
+              "</label>"
+            : '<input type="hidden" id="usr-active" value="1" />') +
+          '  <div class="muted" style="background:var(--bg-input);padding:9px;border-radius:8px;margin-bottom:12px;">' +
+          "    Rappel : pensez à créer ou supprimer le compte correspondant (e-mail + mot de passe) dans <strong>Supabase → Authentication → Users</strong>." +
+          "  </div>" +
+          '  <button type="submit" class="btn btn-primary" style="width:100%;">Enregistrer le profil</button>' +
+          "</form>"
+        );
+      }
+
+      function showMasterLotModal(masterId) {
+        if (!canManageLotsAndSites()) return;
+        var mLot = masterId ? sharedState.masterLots.find(function (m) { return m.id === masterId; }) : null;
+        openModal(
+          mLot ? "Modifier le lot principal" : "Nouveau lot principal",
+          '<form id="master-lot-form" data-master-id="' + escapeHtml(masterId || "") + '">' +
+          "  <label>Nom du lot principal</label>" +
+          '  <input type="text" id="mlot-name" required value="' + escapeHtml(mLot ? mLot.name : "") + '" placeholder="Ex: Lot Fontenay-le-Comte" />' +
+          "  <label>Secteur / Étiquette filtre</label>" +
+          '  <input type="text" id="mlot-sector" required value="' + escapeHtml(mLot ? mLot.sector : "") + '" placeholder="Ex: FONTENAY, LRSY, LUÇON, RÉSERVE..." />' +
+          '  <button type="submit" class="btn btn-primary" style="width:100%;">Enregistrer le lot</button>' +
+          "</form>"
+        );
+      }
+
+      function showSublotModal(masterId, sublotId) {
+        if (!canManageLotsAndSites()) return;
+        var mLot = sharedState.masterLots.find(function (m) { return m.id === masterId; });
+        if (!mLot) return;
+        var sub = sublotId ? (mLot.sublots || []).find(function (s) { return s.id === sublotId; }) : null;
+
+        openModal(
+          sub ? "Renommer le sous-lot" : "Ajouter un sous-lot dans " + mLot.name,
+          '<form id="sublot-form" data-master-id="' + escapeHtml(masterId) + '" data-sublot-id="' + escapeHtml(sublotId || "") + '">' +
+          "  <label>Nom du sous-lot</label>" +
+          '  <input type="text" id="sublot-name-input" required value="' + escapeHtml(sub ? sub.name : "") + '" placeholder="Ex: Lot PSC, Lot STGN1, Lot MES..." />' +
+          '  <button type="submit" class="btn btn-primary" style="width:100%;">' + (sub ? "Enregistrer" : "Créer le sous-lot") + "</button>" +
+          "</form>"
+        );
+      }
+
       function showAlertModal(defaultMasterId, defaultSublotId) {
+        if (!sharedState.masterLots.length) {
+          showToast("Aucun lot disponible");
+          return;
+        }
         var mId = defaultMasterId || sharedState.masterLots[0].id;
         var masterOptions = sharedState.masterLots.map(function (m) {
           return '<option value="' + escapeHtml(m.id) + '"' + (m.id === mId ? " selected" : "") + ">" + escapeHtml(m.name) + "</option>";
@@ -1981,10 +2285,12 @@
       }
 
       function showReservationModal(masterId, sublotId) {
+        if (!canManageLotsAndSites()) return;
         var mLot = sharedState.masterLots.find(function (m) { return m.id === masterId; });
         var sub = mLot && mLot.sublots.find(function (s) { return s.id === sublotId; });
         if (!sub) return;
-        var defaultAuthor = (currentUser && ((currentUser.user_metadata && currentUser.user_metadata.full_name) || currentUser.email)) || (verifiedTrainer ? verifiedTrainer.email : "");
+        var rec = getCurrentUserRecord();
+        var defaultAuthor = (rec && rec.name) || (currentUser && ((currentUser.user_metadata && currentUser.user_metadata.full_name) || currentUser.email)) || (verifiedTrainer ? verifiedTrainer.email : "");
 
         openModal(
           "Réserver : " + mLot.name + " — " + sub.name,
@@ -2002,15 +2308,18 @@
         var mLot = sharedState.masterLots.find(function (m) { return m.id === masterId; });
         var sub = mLot && mLot.sublots.find(function (s) { return s.id === sublotId; });
         if (!sub) return;
+        var canEdit = canManageLotsAndSites();
 
         var itemsHtml = (sub.items || []).map(function (it, idx) {
           return (
             '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);">' +
-            '  <label style="display:flex;align-items:center;gap:8px;margin:0;cursor:pointer;color:var(--text);">' +
-            '    <input type="checkbox" data-action="toggle-inv-item" data-master-id="' + escapeHtml(masterId) + '" data-sublot-id="' + escapeHtml(sublotId) + '" data-idx="' + idx + '"' + (it.ok ? " checked" : "") + ' style="width:auto;margin:0;" />' +
+            '  <label style="display:flex;align-items:center;gap:8px;margin:0;cursor:' + (canEdit ? "pointer" : "default") + ';color:var(--text);">' +
+            '    <input type="checkbox" ' + (canEdit ? 'data-action="toggle-inv-item"' : "disabled") + ' data-master-id="' + escapeHtml(masterId) + '" data-sublot-id="' + escapeHtml(sublotId) + '" data-idx="' + idx + '"' + (it.ok ? " checked" : "") + ' style="width:auto;margin:0;" />' +
             "    <span>" + escapeHtml(it.name) + " (×" + (it.qty || 1) + ")</span>" +
             "  </label>" +
-            '  <button type="button" class="btn btn-sm btn-ghost" data-action="delete-inv-item" data-master-id="' + escapeHtml(masterId) + '" data-sublot-id="' + escapeHtml(sublotId) + '" data-idx="' + idx + '">×</button>' +
+            (canEdit
+              ? '<button type="button" class="btn btn-sm btn-ghost" data-action="delete-inv-item" data-master-id="' + escapeHtml(masterId) + '" data-sublot-id="' + escapeHtml(sublotId) + '" data-idx="' + idx + '">×</button>'
+              : "") +
             "</div>"
           );
         }).join("");
@@ -2018,18 +2327,21 @@
         openModal(
           "Inventaire : " + mLot.name + " — " + sub.name,
           (itemsHtml || '<p class="muted">Aucun article dans cet inventaire.</p>') +
-          '<form id="add-inv-form" data-master-id="' + escapeHtml(masterId) + '" data-sublot-id="' + escapeHtml(sublotId) + '" style="margin-top:14px;">' +
-          "  <label>Ajouter un matériel à la liste</label>" +
-          '  <div style="display:flex;gap:8px;">' +
-          '    <input type="text" id="inv-new-name" required placeholder="Désignation matériel..." style="margin-bottom:0;" />' +
-          '    <input type="text" id="inv-new-qty" value="1" style="width:64px;margin-bottom:0;text-align:center;" />' +
-          '    <button type="submit" class="btn btn-primary">+</button>' +
-          "  </div>" +
-          "</form>"
+          (canEdit
+            ? '<form id="add-inv-form" data-master-id="' + escapeHtml(masterId) + '" data-sublot-id="' + escapeHtml(sublotId) + '" style="margin-top:14px;">' +
+              "  <label>Ajouter un matériel à la liste</label>" +
+              '  <div style="display:flex;gap:8px;">' +
+              '    <input type="text" id="inv-new-name" required placeholder="Désignation matériel..." style="margin-bottom:0;" />' +
+              '    <input type="text" id="inv-new-qty" value="1" style="width:64px;margin-bottom:0;text-align:center;" />' +
+              '    <button type="submit" class="btn btn-primary">+</button>' +
+              "  </div>" +
+              "</form>"
+            : '<div class="muted" style="margin-top:12px;">Consultation uniquement. Utilisez « Signaler » pour déclarer un manque ou une casse.</div>')
         );
       }
 
       function showSiteModal(siteId) {
+        if (!canManageLotsAndSites()) return;
         var site = siteId ? sharedState.sites.find(function (s) { return s.id === siteId; }) : null;
         openModal(
           site ? "Modifier le site" : "Nouveau lieu de formation",
@@ -2094,7 +2406,7 @@
       }
 
       /* =====================================================================
-         14. GESTIONNAIRE GLOBAL D'ÉVÉNEMENTS (DÉLÉGATION PROPRE)
+         14. GESTIONNAIRE GLOBAL D'ÉVÉNEMENTS
          ===================================================================== */
       document.addEventListener("click", async function (e) {
         var target = e.target.closest("[data-action]");
@@ -2200,6 +2512,31 @@
           return;
         }
 
+        /* Gestion utilisateurs (Administrateur uniquement) */
+        if (action === "open-user-modal") {
+          if (!canManageUsers()) return;
+          showUserModal(target.getAttribute("data-user-id"));
+          return;
+        }
+
+        if (action === "delete-user") {
+          if (!canManageUsers()) return;
+          var uId = target.getAttribute("data-user-id");
+          var targetUser = (sharedState.users || []).find(function (u) { return u.id === uId; });
+          if (!targetUser) return;
+          if ((targetUser.email || "").toLowerCase() === PRIMARY_ADMIN_EMAIL.toLowerCase()) {
+            showToast("Impossible de supprimer l'administrateur principal");
+            return;
+          }
+          if (!window.confirm("Retirer le profil de " + (targetUser.name || targetUser.email) + " ? Pensez aussi à supprimer son identifiant dans Supabase Auth.")) return;
+          sharedState.users = sharedState.users.filter(function (u) { return u.id !== uId; });
+          scheduleSharedSync();
+          renderApp();
+          showToast("Profil supprimé");
+          return;
+        }
+
+        /* Gestion Lots & Sous-lots */
         if (action === "filter-sector") {
           localState.lotFilterSector = target.getAttribute("data-sector");
           persistLocalOnly();
@@ -2225,20 +2562,50 @@
           return;
         }
 
-        if (action === "open-add-sublot") {
-          var mIdAdd = target.getAttribute("data-master-id");
-          openModal(
-            "Ajouter un sous-lot",
-            '<form id="add-sublot-form" data-master-id="' + escapeHtml(mIdAdd) + '">' +
-            "  <label>Nom du sous-lot</label>" +
-            '  <input type="text" id="new-sublot-name" required placeholder="Ex: Lot PSC Réserve" />' +
-            '  <button type="submit" class="btn btn-primary" style="width:100%;">Créer le sous-lot</button>' +
-            "</form>"
-          );
+        if (action === "open-master-lot-modal") {
+          if (!canManageLotsAndSites()) return;
+          showMasterLotModal(target.getAttribute("data-master-id"));
+          return;
+        }
+
+        if (action === "delete-master-lot") {
+          if (!canManageLotsAndSites()) return;
+          var delMId = target.getAttribute("data-master-id");
+          var delMLot = sharedState.masterLots.find(function (m) { return m.id === delMId; });
+          if (!delMLot) return;
+          if (!window.confirm("Supprimer définitivement « " + delMLot.name + " » et tous ses sous-lots ?")) return;
+          sharedState.masterLots = sharedState.masterLots.filter(function (m) { return m.id !== delMId; });
+          sharedState.alerts = sharedState.alerts.filter(function (a) { return a.masterId !== delMId; });
+          if (localState.lotFilterSector === delMLot.sector) localState.lotFilterSector = "ALL";
+          scheduleSharedSync();
+          renderApp();
+          showToast("Lot principal supprimé");
+          return;
+        }
+
+        if (action === "open-sublot-modal") {
+          if (!canManageLotsAndSites()) return;
+          showSublotModal(target.getAttribute("data-master-id"), target.getAttribute("data-sublot-id"));
+          return;
+        }
+
+        if (action === "delete-sublot") {
+          if (!canManageLotsAndSites()) return;
+          var mSubDel = sharedState.masterLots.find(function (m) { return m.id === target.getAttribute("data-master-id"); });
+          var sDelId = target.getAttribute("data-sublot-id");
+          var sDelObj = mSubDel && (mSubDel.sublots || []).find(function (s) { return s.id === sDelId; });
+          if (!sDelObj) return;
+          if (!window.confirm("Supprimer le sous-lot « " + sDelObj.name + " » ?")) return;
+          mSubDel.sublots = mSubDel.sublots.filter(function (s) { return s.id !== sDelId; });
+          sharedState.alerts = sharedState.alerts.filter(function (a) { return a.sublotId !== sDelId; });
+          scheduleSharedSync();
+          renderApp();
+          showToast("Sous-lot supprimé");
           return;
         }
 
         if (action === "toggle-sublot-ready") {
+          if (!canManageLotsAndSites()) return;
           var mR = sharedState.masterLots.find(function (m) { return m.id === target.getAttribute("data-master-id"); });
           var sR = mR && mR.sublots.find(function (s) { return s.id === target.getAttribute("data-sublot-id"); });
           if (sR) {
@@ -2250,6 +2617,7 @@
         }
 
         if (action === "toggle-sublot-reserved") {
+          if (!canManageLotsAndSites()) return;
           var mRes = sharedState.masterLots.find(function (m) { return m.id === target.getAttribute("data-master-id"); });
           var sRes = mRes && mRes.sublots.find(function (s) { return s.id === target.getAttribute("data-sublot-id"); });
           if (sRes) {
@@ -2267,11 +2635,13 @@
         }
 
         if (action === "open-alert-modal") {
+          if (!canReportAlert()) return;
           showAlertModal(target.getAttribute("data-master-id"), target.getAttribute("data-sublot-id"));
           return;
         }
 
         if (action === "resolve-alert") {
+          if (!canManageLotsAndSites()) return;
           var alId = target.getAttribute("data-alert-id");
           sharedState.alerts = sharedState.alerts.filter(function (a) { return a.id !== alId; });
           scheduleSharedSync();
@@ -2286,6 +2656,7 @@
         }
 
         if (action === "toggle-inv-item") {
+          if (!canManageLotsAndSites()) return;
           var mI = sharedState.masterLots.find(function (m) { return m.id === target.getAttribute("data-master-id"); });
           var sI = mI && mI.sublots.find(function (s) { return s.id === target.getAttribute("data-sublot-id"); });
           var idxI = parseInt(target.getAttribute("data-idx"), 10);
@@ -2298,6 +2669,7 @@
         }
 
         if (action === "delete-inv-item") {
+          if (!canManageLotsAndSites()) return;
           var mD = sharedState.masterLots.find(function (m) { return m.id === target.getAttribute("data-master-id"); });
           var sD = mD && mD.sublots.find(function (s) { return s.id === target.getAttribute("data-sublot-id"); });
           var idxD = parseInt(target.getAttribute("data-idx"), 10);
@@ -2311,7 +2683,21 @@
         }
 
         if (action === "open-site-modal") {
+          if (!canManageLotsAndSites()) return;
           showSiteModal(target.getAttribute("data-site-id"));
+          return;
+        }
+
+        if (action === "delete-site") {
+          if (!canManageLotsAndSites()) return;
+          var siteDelId = target.getAttribute("data-site-id");
+          var siteObj = sharedState.sites.find(function (s) { return s.id === siteDelId; });
+          if (!siteObj) return;
+          if (!window.confirm("Supprimer le site « " + siteObj.name + " » ?")) return;
+          sharedState.sites = sharedState.sites.filter(function (s) { return s.id !== siteDelId; });
+          scheduleSharedSync();
+          renderApp();
+          showToast("Site supprimé");
           return;
         }
 
@@ -2609,7 +2995,7 @@
         }
       });
 
-      /* Mise à jour dynamique du sélecteur de sous-lot dans la modale alerte */
+      /* Mise à jour dynamique du sélecteur de sous-lot & imports fichiers */
       document.addEventListener("change", function (e) {
         if (e.target && e.target.id === "alert-master-select") {
           var m = sharedState.masterLots.find(function (x) { return x.id === e.target.value; });
@@ -2638,9 +3024,14 @@
           rJson.onload = function (ev) {
             try {
               var imported = JSON.parse(ev.target.result);
-              if (imported.shared) sharedState = Object.assign(createDefaultSharedData(), imported.shared);
-              if (imported.local) localState = Object.assign(createDefaultLocalData(), imported.local);
-              scheduleSharedSync();
+              if (imported.shared && canManageLotsAndSites()) {
+                sharedState = normalizeSharedState(imported.shared);
+                scheduleSharedSync();
+              }
+              if (imported.local) {
+                localState = Object.assign(createDefaultLocalData(), imported.local);
+                persistLocalOnly();
+              }
               renderApp();
               showToast("Sauvegarde importée");
             } catch (err) {
@@ -2680,17 +3071,6 @@
           return;
         }
 
-        if (form.id === "supabase-quick-cfg-form") {
-          var uEl = form.querySelector("input[type='url']");
-          var kEl = form.querySelector("input[type='text']");
-          saveSupabaseConfig({ url: uEl.value, anonKey: kEl.value });
-          initSupabaseClient();
-          closeModal();
-          showToast("Configuration Supabase enregistrée");
-          renderApp();
-          return;
-        }
-
         if (form.id === "supabase-login-form") {
           var email = document.getElementById("login-email").value.trim();
           var pass = document.getElementById("login-pass").value;
@@ -2714,17 +3094,123 @@
           return;
         }
 
+        if (form.id === "user-profile-form") {
+          if (!canManageUsers()) return;
+          var editUId = form.getAttribute("data-user-id");
+          var uName = document.getElementById("usr-name").value.trim();
+          var uEmail = document.getElementById("usr-email").value.trim().toLowerCase();
+          var isPrimary = uEmail === PRIMARY_ADMIN_EMAIL.toLowerCase();
+          var uRole = isPrimary ? "admin" : document.getElementById("usr-role").value;
+          var activeEl = document.getElementById("usr-active");
+          var uActive = isPrimary ? true : (activeEl && activeEl.type === "checkbox" ? activeEl.checked : true);
+
+          if (!sharedState.users) sharedState.users = [];
+
+          if (editUId) {
+            var idxU = sharedState.users.findIndex(function (x) { return x.id === editUId; });
+            if (idxU !== -1) {
+              sharedState.users[idxU] = Object.assign({}, sharedState.users[idxU], {
+                name: uName,
+                email: uEmail,
+                role: uRole,
+                active: uActive
+              });
+            }
+          } else {
+            var exists = sharedState.users.findIndex(function (x) { return (x.email || "").toLowerCase() === uEmail; });
+            if (exists !== -1) {
+              sharedState.users[exists].name = uName;
+              sharedState.users[exists].role = uRole;
+              sharedState.users[exists].active = uActive;
+            } else {
+              sharedState.users.push({
+                id: uid("usr"),
+                email: uEmail,
+                name: uName,
+                role: uRole,
+                active: uActive,
+                createdAt: new Date().toISOString()
+              });
+            }
+          }
+          closeModal();
+          scheduleSharedSync();
+          renderApp();
+          showToast("Profil enregistré (pensez à vérifier Supabase Auth)");
+          return;
+        }
+
+        if (form.id === "master-lot-form") {
+          if (!canManageLotsAndSites()) return;
+          var editMId = form.getAttribute("data-master-id");
+          var mName = document.getElementById("mlot-name").value.trim();
+          var mSector = document.getElementById("mlot-sector").value.trim().toUpperCase();
+
+          if (editMId) {
+            var mObj = sharedState.masterLots.find(function (m) { return m.id === editMId; });
+            if (mObj) {
+              mObj.name = mName;
+              mObj.sector = mSector;
+            }
+          } else {
+            sharedState.masterLots.push({
+              id: uid("lot"),
+              name: mName,
+              sector: mSector,
+              expanded: true,
+              sublots: []
+            });
+          }
+          closeModal();
+          scheduleSharedSync();
+          renderApp();
+          showToast(editMId ? "Lot modifié" : "Nouveau lot créé");
+          return;
+        }
+
+        if (form.id === "sublot-form") {
+          if (!canManageLotsAndSites()) return;
+          var mA = sharedState.masterLots.find(function (m) { return m.id === form.getAttribute("data-master-id"); });
+          var editSubId = form.getAttribute("data-sublot-id");
+          var nameA = document.getElementById("sublot-name-input").value.trim();
+          if (mA && nameA) {
+            if (!mA.sublots) mA.sublots = [];
+            if (editSubId) {
+              var sObj = mA.sublots.find(function (s) { return s.id === editSubId; });
+              if (sObj) sObj.name = nameA;
+            } else {
+              mA.sublots.push({
+                id: uid("sub"),
+                name: nameA,
+                ready: true,
+                reserved: false,
+                reservedBy: "",
+                reservedDates: "",
+                items: []
+              });
+              mA.comingSoon = false;
+            }
+            closeModal();
+            scheduleSharedSync();
+            renderApp();
+            showToast(editSubId ? "Sous-lot renommé" : "Sous-lot créé");
+          }
+          return;
+        }
+
         if (form.id === "alert-form") {
+          if (!canReportAlert()) return;
           var mId = document.getElementById("alert-master-select").value;
           var sId = document.getElementById("alert-sublot-select").value;
           var type = document.getElementById("alert-type-select").value;
           var detail = document.getElementById("alert-detail-input").value.trim();
           var markInc = document.getElementById("alert-mark-incomplete").checked;
 
-          var mObj = sharedState.masterLots.find(function (m) { return m.id === mId; });
-          var sObj = mObj && mObj.sublots.find(function (s) { return s.id === sId; });
-          var label = (mObj ? mObj.name : "") + (sObj ? " — " + sObj.name : "");
-          var author = (currentUser && ((currentUser.user_metadata && currentUser.user_metadata.full_name) || currentUser.email)) || (verifiedTrainer ? verifiedTrainer.email : "Formateur");
+          var mObjA = sharedState.masterLots.find(function (m) { return m.id === mId; });
+          var sObjA = mObjA && (mObjA.sublots || []).find(function (s) { return s.id === sId; });
+          var label = (mObjA ? mObjA.name : "") + (sObjA ? " — " + sObjA.name : "");
+          var recA = getCurrentUserRecord();
+          var author = (recA && recA.name) || (currentUser && ((currentUser.user_metadata && currentUser.user_metadata.full_name) || currentUser.email)) || (verifiedTrainer ? verifiedTrainer.email : "Formateur");
 
           sharedState.alerts.unshift({
             id: uid("al"),
@@ -2737,7 +3223,7 @@
             createdAt: new Date().toISOString()
           });
 
-          if (markInc && sObj) sObj.ready = false;
+          if (markInc && sObjA) sObjA.ready = false;
           closeModal();
           scheduleSharedSync();
           renderApp();
@@ -2746,6 +3232,7 @@
         }
 
         if (form.id === "reserve-form") {
+          if (!canManageLotsAndSites()) return;
           var mR = sharedState.masterLots.find(function (m) { return m.id === form.getAttribute("data-master-id"); });
           var sR = mR && mR.sublots.find(function (s) { return s.id === form.getAttribute("data-sublot-id"); });
           if (sR) {
@@ -2760,28 +3247,8 @@
           return;
         }
 
-        if (form.id === "add-sublot-form") {
-          var mA = sharedState.masterLots.find(function (m) { return m.id === form.getAttribute("data-master-id"); });
-          var nameA = document.getElementById("new-sublot-name").value.trim();
-          if (mA && nameA) {
-            mA.sublots.push({
-              id: uid("sub"),
-              name: nameA,
-              ready: true,
-              reserved: false,
-              reservedBy: "",
-              reservedDates: "",
-              items: []
-            });
-            mA.comingSoon = false;
-            closeModal();
-            scheduleSharedSync();
-            renderApp();
-          }
-          return;
-        }
-
         if (form.id === "add-inv-form") {
+          if (!canManageLotsAndSites()) return;
           var mInv = sharedState.masterLots.find(function (m) { return m.id === form.getAttribute("data-master-id"); });
           var sInv = mInv && mInv.sublots.find(function (s) { return s.id === form.getAttribute("data-sublot-id"); });
           var nInv = document.getElementById("inv-new-name").value.trim();
@@ -2796,6 +3263,7 @@
         }
 
         if (form.id === "site-form") {
+          if (!canManageLotsAndSites()) return;
           var editSiteId = form.getAttribute("data-site-id");
           var payloadSite = {
             id: editSiteId || uid("site"),
