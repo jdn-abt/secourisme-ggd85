@@ -455,6 +455,38 @@
       padding: 12px 14px;
       margin-bottom: 14px;
     }
+    .confirmed-res-list {
+      margin-top: 8px;
+      padding-top: 6px;
+      border-top: 1px dashed rgba(148, 163, 184, 0.22);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .confirmed-res-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      font-size: 11.5px;
+      color: #FDE68A;
+      line-height: 1.3;
+    }
+    .btn-xs-cancel {
+      background: rgba(239, 68, 68, 0.16);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #FCA5A5;
+      border-radius: 6px;
+      padding: 2px 7px;
+      font-size: 10.5px;
+      font-weight: 700;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .btn-xs-cancel:hover {
+      background: rgba(239, 68, 68, 0.32);
+      color: #FFFFFF;
+    }
     .alert-box {
       background: rgba(239, 68, 68, 0.11);
       border: 1px solid rgba(239, 68, 68, 0.35);
@@ -1072,6 +1104,32 @@
         }
         if (!Array.isArray(merged.sites)) merged.sites = base.sites.slice();
 
+        (merged.masterLots || []).forEach(function (m) {
+          (m.sublots || []).forEach(function (sub) {
+            if (!Array.isArray(sub.confirmedReservations)) {
+              sub.confirmedReservations = [];
+            }
+            if (sub.reserved && (sub.reservedBy || sub.reservedDates)) {
+              var already = sub.confirmedReservations.some(function (cr) {
+                return cr.reservedBy === sub.reservedBy && cr.dateText === sub.reservedDates;
+              });
+              if (!already) {
+                sub.confirmedReservations.push({
+                  id: "cres_migr_" + Math.random().toString(36).slice(2, 8),
+                  reservedBy: sub.reservedBy || "Formateur",
+                  requesterEmail: "",
+                  dateText: sub.reservedDates || "",
+                  notes: "",
+                  requestId: ""
+                });
+              }
+              sub.reserved = false;
+              sub.reservedBy = "";
+              sub.reservedDates = "";
+            }
+          });
+        });
+
         var hasPrimary = merged.users.some(function (u) {
           return (u.email || "").toLowerCase() === PRIMARY_ADMIN_EMAIL.toLowerCase();
         });
@@ -1408,6 +1466,36 @@
           }
         });
         return Object.keys(set);
+      }
+
+      function getTodayIsoLocal() {
+        var now = new Date();
+        var y = now.getFullYear();
+        var m = String(now.getMonth() + 1).padStart(2, "0");
+        var d = String(now.getDate()).padStart(2, "0");
+        return y + "-" + m + "-" + d;
+      }
+
+      function getActiveConfirmedReservations(sub) {
+        var today = getTodayIsoLocal();
+        var list = Array.isArray(sub.confirmedReservations) ? sub.confirmedReservations : [];
+        return list
+          .filter(function (cr) {
+            if (!cr || !cr.dateText) return false;
+            return String(cr.dateText).trim() >= today;
+          })
+          .sort(function (a, b) {
+            return String(a.dateText).localeCompare(String(b.dateText));
+          });
+      }
+
+      function formatDisplayDateFr(isoDate) {
+        if (!isoDate) return "";
+        var parts = String(isoDate).split("-");
+        if (parts.length === 3) {
+          return parts[2] + "/" + parts[1] + "/" + parts[0];
+        }
+        return String(isoDate);
       }
 
       async function triggerEmailNotification(payload) {
@@ -1900,19 +1988,26 @@
                     ? '<button type="button" class="status-badge ' + (sub.ready ? "st-ready" : "st-incomplete") + '" data-action="toggle-sublot-ready" data-master-id="' + escapeHtml(mLot.id) + '" data-sublot-id="' + escapeHtml(sub.id) + '">' +
                       (sub.ready ? "● Prêt à la formation" : "▲ Incomplet") +
                       "</button>" +
-                      (sub.reserved
-                        ? '<button type="button" class="status-badge st-reserved" data-action="toggle-sublot-reserved" data-master-id="' + escapeHtml(mLot.id) + '" data-sublot-id="' + escapeHtml(sub.id) + '">● Réservé</button>'
-                        : '<button type="button" class="status-badge st-avail" data-action="open-reservation-request" data-master-id="' + escapeHtml(mLot.id) + '" data-sublot-id="' + escapeHtml(sub.id) + '">Réserver</button>')
+                      '<button type="button" class="status-badge st-avail" data-action="open-reservation-request" data-master-id="' + escapeHtml(mLot.id) + '" data-sublot-id="' + escapeHtml(sub.id) + '">Réserver</button>'
                     : '<span class="status-badge readonly ' + (sub.ready ? "st-ready" : "st-incomplete") + '">' +
                       (sub.ready ? "● Prêt à la formation" : "▲ Incomplet") +
                       "</span>" +
-                      (sub.reserved
-                        ? '<span class="status-badge readonly st-reserved">● Réservé</span>'
-                        : '<button type="button" class="status-badge st-avail" data-action="open-reservation-request" data-master-id="' + escapeHtml(mLot.id) + '" data-sublot-id="' + escapeHtml(sub.id) + '">Réserver</button>')) +
+                      '<button type="button" class="status-badge st-avail" data-action="open-reservation-request" data-master-id="' + escapeHtml(mLot.id) + '" data-sublot-id="' + escapeHtml(sub.id) + '">Réserver</button>') +
                   "    </div>" +
-                  (sub.reserved && (sub.reservedBy || sub.reservedDates)
-                    ? '<div class="muted" style="margin-top:7px;">Réservé par <strong>' + escapeHtml(sub.reservedBy || "Formateur") + "</strong>" + (sub.reservedDates ? " (" + escapeHtml(sub.reservedDates) + ")" : "") + "</div>"
-                    : "") +
+                  (function () {
+                    var activeConfirmed = getActiveConfirmedReservations(sub);
+                    if (!activeConfirmed.length) return "";
+                    return '<div class="confirmed-res-list">' +
+                      activeConfirmed.map(function (cr) {
+                        return '<div class="confirmed-res-line">' +
+                          '<span>● Réservé : <strong>' + escapeHtml(cr.reservedBy || "Formateur") + '</strong> — ' + escapeHtml(formatDisplayDateFr(cr.dateText)) + (cr.notes ? ' (' + escapeHtml(cr.notes) + ')' : '') + '</span>' +
+                          (canEdit
+                            ? '<button type="button" class="btn-xs-cancel" data-action="cancel-confirmed-reservation" data-master-id="' + escapeHtml(mLot.id) + '" data-sublot-id="' + escapeHtml(sub.id) + '" data-cres-id="' + escapeHtml(cr.id) + '" title="Annuler cette réservation">Annuler</button>'
+                            : '') +
+                          '</div>';
+                      }).join("") +
+                      '</div>';
+                  })() +
                   (subAlerts.length > 0
                     ? '<div class="alert-box" style="margin-top:8px;">' +
                       subAlerts.map(function (sa) {
@@ -2819,9 +2914,18 @@
             var mTarget = sharedState.masterLots.find(function (m) { return m.id === reqObj.masterId; });
             var sTarget = mTarget && (mTarget.sublots || []).find(function (s) { return s.id === reqObj.sublotId; });
             if (sTarget) {
-              sTarget.reserved = true;
-              sTarget.reservedBy = reqObj.requesterName || reqObj.requesterEmail;
-              sTarget.reservedDates = reqObj.dateText;
+              if (!Array.isArray(sTarget.confirmedReservations)) sTarget.confirmedReservations = [];
+              var existsCres = sTarget.confirmedReservations.some(function (c) { return c.requestId === reqObj.id; });
+              if (!existsCres) {
+                sTarget.confirmedReservations.push({
+                  id: uid("cres"),
+                  requestId: reqObj.id,
+                  reservedBy: reqObj.requesterName || reqObj.requesterEmail,
+                  requesterEmail: reqObj.requesterEmail || "",
+                  dateText: reqObj.dateText,
+                  notes: reqObj.notes || ""
+                });
+              }
             }
           }
 
@@ -2841,6 +2945,56 @@
                 dateText: reqObj.dateText,
                 status: decision,
                 decidedBy: decAuthor
+              }
+            });
+          }
+          return;
+        }
+
+        if (action === "cancel-confirmed-reservation") {
+          if (!canManageLotsAndSites()) return;
+          var cMasterId = target.getAttribute("data-master-id");
+          var cSublotId = target.getAttribute("data-sublot-id");
+          var cResId = target.getAttribute("data-cres-id");
+          var mCancel = sharedState.masterLots.find(function (m) { return m.id === cMasterId; });
+          var sCancel = mCancel && (mCancel.sublots || []).find(function (s) { return s.id === cSublotId; });
+          if (!sCancel || !Array.isArray(sCancel.confirmedReservations)) return;
+
+          var cresObj = sCancel.confirmedReservations.find(function (c) { return c.id === cResId; });
+          if (!cresObj) return;
+          if (!window.confirm("Annuler la réservation de " + (cresObj.reservedBy || "ce formateur") + " pour le " + formatDisplayDateFr(cresObj.dateText) + " ?")) return;
+
+          sCancel.confirmedReservations = sCancel.confirmedReservations.filter(function (c) { return c.id !== cResId; });
+
+          var recCancel = getCurrentUserRecord();
+          var cancelAuthor = (recCancel && recCancel.name) || (currentUser && ((currentUser.user_metadata && currentUser.user_metadata.full_name) || currentUser.email)) || (verifiedTrainer ? verifiedTrainer.email : "Référent");
+
+          if (cresObj.requestId) {
+            var linkedReq = (sharedState.reservationRequests || []).find(function (r) { return r.id === cresObj.requestId; });
+            if (linkedReq) {
+              linkedReq.status = "rejected";
+              linkedReq.decidedBy = cancelAuthor;
+              linkedReq.decisionNote = "Réservation annulée";
+              linkedReq.decisionUpdatedAt = new Date().toISOString();
+              linkedReq.seenByRequester = false;
+            }
+          }
+
+          scheduleSharedSync();
+          renderApp();
+          showToast("Réservation annulée");
+
+          if (cresObj.requesterEmail) {
+            var lotNameCancel = (mCancel ? mCancel.name : "") + (sCancel ? " — " + sCancel.name : "");
+            await triggerEmailNotification({
+              event: "reservation_cancelled",
+              to: [cresObj.requesterEmail],
+              subject: "[GGD85] Annulation de votre réservation — " + lotNameCancel,
+              message: "Votre réservation validée pour « " + lotNameCancel + " » à la date du " + formatDisplayDateFr(cresObj.dateText) + " a été annulée par " + cancelAuthor + ".",
+              meta: {
+                lotLabel: lotNameCancel,
+                dateText: cresObj.dateText,
+                cancelledBy: cancelAuthor
               }
             });
           }
@@ -3422,6 +3576,7 @@
                 reserved: false,
                 reservedBy: "",
                 reservedDates: "",
+                confirmedReservations: [],
                 items: []
               });
               mA.comingSoon = false;
