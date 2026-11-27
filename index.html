@@ -1489,6 +1489,27 @@
           });
       }
 
+      function isSublotBookedOnDate(sub, dateStr) {
+        if (!sub || !dateStr) return false;
+        var clean = String(dateStr).trim();
+        var activeConfirmed = getActiveConfirmedReservations(sub);
+        return activeConfirmed.some(function (cr) {
+          return String(cr.dateText).trim() === clean;
+        });
+      }
+
+      function hasPendingRequestOnDate(masterId, sublotId, dateStr) {
+        if (!dateStr) return false;
+        var clean = String(dateStr).trim();
+        return (sharedState.reservationRequests || []).some(function (req) {
+          return req &&
+            req.status === "pending" &&
+            req.masterId === masterId &&
+            req.sublotId === sublotId &&
+            String(req.dateText || "").trim() === clean;
+        });
+      }
+
       function formatDisplayDateFr(isoDate) {
         if (!isoDate) return "";
         var parts = String(isoDate).split("-");
@@ -2543,21 +2564,32 @@
         var rec = getCurrentUserRecord();
         var defaultAuthor = (rec && rec.name) || (currentUser && ((currentUser.user_metadata && currentUser.user_metadata.full_name) || currentUser.email)) || (verifiedTrainer ? verifiedTrainer.email : "");
         var defaultEmail = getCurrentUserEmailExact();
+        var activeConfirmed = getActiveConfirmedReservations(sub);
+        var todayIso = getTodayIsoLocal();
+
+        var bookedSummaryHtml = activeConfirmed.length > 0
+          ? '<div class="alert-box" style="margin-bottom:11px;background:rgba(245,158,11,0.12);border-color:rgba(245,158,11,0.4);color:#FDE68A;">' +
+            '  <strong>Dates déjà réservées pour ce sous-lot :</strong> ' +
+            activeConfirmed.map(function (cr) { return escapeHtml(formatDisplayDateFr(cr.dateText)); }).join(", ") +
+            "</div>"
+          : "";
 
         openModal(
           "Demande de réservation",
           '<form id="reserve-request-form" data-master-id="' + escapeHtml(masterId) + '" data-sublot-id="' + escapeHtml(sublotId) + '">' +
           '  <div class="muted" style="margin-bottom:10px;">Lot concerné : <strong>' + escapeHtml(mLot.name + " — " + sub.name) + "</strong></div>" +
+          bookedSummaryHtml +
           "  <label>Demandeur</label>" +
           '  <input type="text" id="res-req-by" required value="' + escapeHtml(defaultAuthor) + '" placeholder="Grade et nom" />' +
           "  <label>Adresse e-mail de suivi</label>" +
           '  <input type="email" id="res-req-email" required value="' + escapeHtml(defaultEmail) + '" placeholder="prenom.nom@exemple.fr" />' +
           "  <label>Date souhaitée</label>" +
-          '  <input type="date" id="res-req-date" required style="width:100%;background:var(--bg-input);border:1px solid var(--border-light);color:var(--text);border-radius:var(--radius-sm);padding:10px 11px;font-size:14px;font-family:inherit;margin-bottom:11px;" />' +
+          '  <input type="date" id="res-req-date" min="' + escapeHtml(todayIso) + '" required style="width:100%;background:var(--bg-input);border:1px solid var(--border-light);color:var(--text);border-radius:var(--radius-sm);padding:10px 11px;font-size:14px;font-family:inherit;margin-bottom:8px;" />' +
+          '  <div id="res-req-date-error" class="alert-box hidden" style="margin-bottom:10px;"></div>' +
           "  <label>Précision / Session (optionnel)</label>" +
           '  <input type="text" id="res-req-notes" placeholder="Ex: Session PSC salle APL" />' +
           '  <div class="muted" style="margin-bottom:12px;">La demande sera transmise aux référents et à l’administrateur sans modifier immédiatement le statut du lot.</div>' +
-          '  <button type="submit" class="btn btn-primary" style="width:100%;">Envoyer la demande de réservation</button>' +
+          '  <button type="submit" id="res-req-submit-btn" class="btn btn-primary" style="width:100%;">Envoyer la demande de réservation</button>' +
           "</form>"
         );
       }
@@ -2915,6 +2947,13 @@
             var sTarget = mTarget && (mTarget.sublots || []).find(function (s) { return s.id === reqObj.sublotId; });
             if (sTarget) {
               if (!Array.isArray(sTarget.confirmedReservations)) sTarget.confirmedReservations = [];
+              var conflictCres = getActiveConfirmedReservations(sTarget).find(function (c) {
+                return c.requestId !== reqObj.id && String(c.dateText).trim() === String(reqObj.dateText).trim();
+              });
+              if (conflictCres) {
+                showToast("Conflit : déjà réservé le " + formatDisplayDateFr(reqObj.dateText) + " par " + (conflictCres.reservedBy || "un formateur"));
+                return;
+              }
               var existsCres = sTarget.confirmedReservations.some(function (c) { return c.requestId === reqObj.id; });
               if (!existsCres) {
                 sTarget.confirmedReservations.push({
@@ -3387,6 +3426,32 @@
 
       /* Mise à jour dynamique du sélecteur de sous-lot & imports fichiers */
       document.addEventListener("change", function (e) {
+        if (e.target && e.target.id === "res-req-date") {
+          var rForm = document.getElementById("reserve-request-form");
+          var rErr = document.getElementById("res-req-date-error");
+          var rBtn = document.getElementById("res-req-submit-btn");
+          if (rForm && rErr) {
+            var mChkId = rForm.getAttribute("data-master-id");
+            var sChkId = rForm.getAttribute("data-sublot-id");
+            var mChkObj = sharedState.masterLots.find(function (m) { return m.id === mChkId; });
+            var sChkObj = mChkObj && (mChkObj.sublots || []).find(function (s) { return s.id === sChkId; });
+            var valDate = e.target.value;
+            if (sChkObj && isSublotBookedOnDate(sChkObj, valDate)) {
+              rErr.textContent = "Ce sous-lot est déjà réservé le " + formatDisplayDateFr(valDate) + ". Choisissez une autre date ou un autre lot.";
+              rErr.classList.remove("hidden");
+              if (rBtn) rBtn.disabled = true;
+            } else if (hasPendingRequestOnDate(mChkId, sChkId, valDate)) {
+              rErr.textContent = "Une demande de réservation est déjà en attente pour ce sous-lot le " + formatDisplayDateFr(valDate) + ".";
+              rErr.classList.remove("hidden");
+              if (rBtn) rBtn.disabled = true;
+            } else {
+              rErr.classList.add("hidden");
+              rErr.textContent = "";
+              if (rBtn) rBtn.disabled = false;
+            }
+          }
+        }
+
         if (e.target && e.target.id === "alert-master-select") {
           var m = sharedState.masterLots.find(function (x) { return x.id === e.target.value; });
           var subSel = document.getElementById("alert-sublot-select");
@@ -3647,6 +3712,23 @@
           var reqDate = document.getElementById("res-req-date").value.trim();
           var reqNotes = document.getElementById("res-req-notes").value.trim();
           var lotLabelReq = (mReqObj ? mReqObj.name : "") + (sReqObj ? " — " + sReqObj.name : "");
+
+          if (sReqObj && isSublotBookedOnDate(sReqObj, reqDate)) {
+            var errBoxSubmit = document.getElementById("res-req-date-error");
+            if (errBoxSubmit) {
+              errBoxSubmit.textContent = "Ce sous-lot est déjà réservé le " + formatDisplayDateFr(reqDate) + ". Vous pouvez toutefois réserver un autre lot à cette même date.";
+              errBoxSubmit.classList.remove("hidden");
+            }
+            return;
+          }
+          if (hasPendingRequestOnDate(mReqId, sReqId, reqDate)) {
+            var errBoxPending = document.getElementById("res-req-date-error");
+            if (errBoxPending) {
+              errBoxPending.textContent = "Une demande est déjà en attente sur ce sous-lot pour le " + formatDisplayDateFr(reqDate) + ".";
+              errBoxPending.classList.remove("hidden");
+            }
+            return;
+          }
 
           if (!sharedState.reservationRequests) sharedState.reservationRequests = [];
           sharedState.reservationRequests.unshift({
