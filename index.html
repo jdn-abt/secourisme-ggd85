@@ -438,6 +438,23 @@
     .st-incomplete { background: var(--red-soft); color: #FCA5A5; border-color: rgba(239, 68, 68, 0.4); }
     .st-avail { background: var(--blue-soft); color: #93C5FD; border-color: rgba(59, 130, 246, 0.35); }
     .st-reserved { background: var(--amber-soft); color: #FCD34D; border-color: rgba(245, 158, 11, 0.4); }
+    .req-card {
+      background: rgba(59, 130, 246, 0.08);
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+    .req-status-pending { background: var(--amber-soft); color: #FCD34D; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .req-status-approved { background: var(--green-soft); color: #86EFAC; border: 1px solid rgba(34, 197, 94, 0.35); }
+    .req-status-rejected { background: var(--red-soft); color: #FCA5A5; border: 1px solid rgba(239, 68, 68, 0.4); }
+    .user-notif-banner {
+      background: rgba(59, 130, 246, 0.14);
+      border: 1px solid rgba(59, 130, 246, 0.45);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      margin-bottom: 14px;
+    }
     .alert-box {
       background: rgba(239, 68, 68, 0.11);
       border: 1px solid rgba(239, 68, 68, 0.35);
@@ -944,6 +961,11 @@
             }
           ],
           alerts: [],
+          reservationRequests: [],
+          mailConfig: {
+            webhookUrl: "",
+            senderLabel: "Cellule Secourisme GGD85"
+          },
           sites: [
             {
               id: "site-ggd85",
@@ -1044,6 +1066,10 @@
         if (!Array.isArray(merged.users)) merged.users = base.users.slice();
         if (!Array.isArray(merged.masterLots)) merged.masterLots = base.masterLots.slice();
         if (!Array.isArray(merged.alerts)) merged.alerts = [];
+        if (!Array.isArray(merged.reservationRequests)) merged.reservationRequests = [];
+        if (!merged.mailConfig || typeof merged.mailConfig !== "object") {
+          merged.mailConfig = { webhookUrl: "", senderLabel: "Cellule Secourisme GGD85" };
+        }
         if (!Array.isArray(merged.sites)) merged.sites = base.sites.slice();
 
         var hasPrimary = merged.users.some(function (u) {
@@ -1367,7 +1393,61 @@
           .replace(/'/g, "&#39;");
       }
 
-      function showToast(msg) {
+      function getCurrentUserEmailExact() {
+        if (currentUser && currentUser.email) return currentUser.email.trim();
+        if (verifiedTrainer && verifiedTrainer.email) return verifiedTrainer.email.trim();
+        return "";
+      }
+
+      function getStaffEmails() {
+        var set = {};
+        set[PRIMARY_ADMIN_EMAIL.toLowerCase()] = true;
+        (sharedState.users || []).forEach(function (u) {
+          if (u && u.email && u.active !== false && (u.role === "admin" || u.role === "referent")) {
+            set[u.email.toLowerCase().trim()] = true;
+          }
+        });
+        return Object.keys(set);
+      }
+
+      async function triggerEmailNotification(payload) {
+        var hookUrl = sharedState.mailConfig && sharedState.mailConfig.webhookUrl ? sharedState.mailConfig.webhookUrl.trim() : "";
+        if (!hookUrl) return { sent: false, reason: "no_webhook" };
+        try {
+          var bodyObj = {
+            source: "cellule_secourisme_ggd85",
+            sender: (sharedState.mailConfig && sharedState.mailConfig.senderLabel) || "Cellule Secourisme GGD85",
+            event: payload.event,
+            to: payload.to || [],
+            subject: payload.subject || "",
+            message: payload.message || "",
+            meta: payload.meta || {},
+            timestamp: new Date().toISOString()
+          };
+          var resp = await fetch(hookUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(bodyObj)
+          });
+          return { sent: resp.ok, status: resp.status };
+        } catch (err) {
+          return { sent: false, reason: err.message || "fetch_error" };
+        }
+      }
+
+      function getReservationDecisionLabel(status) {
+        if (status === "approved") return "Validée";
+        if (status === "rejected") return "Refusée";
+        return "En attente";
+      }
+
+      function getReservationBadgeHtml(status) {
+        if (status === "approved") return '<span class="role-badge req-status-approved">Validée</span>';
+        if (status === "rejected") return '<span class="role-badge req-status-rejected">Refusée</span>';
+        return '<span class="role-badge req-status-pending">En attente</span>';
+      }
+
+            function showToast(msg) {
         var el = document.getElementById("toast-box");
         if (!el) return;
         el.textContent = msg;
@@ -1662,6 +1742,67 @@
           "  </div>" +
           "</div>";
 
+        var myEmail = getCurrentEmail();
+        var myDecisionUpdates = (sharedState.reservationRequests || []).filter(function (req) {
+          return myEmail &&
+            (req.requesterEmail || "").toLowerCase().trim() === myEmail &&
+            req.decisionUpdatedAt &&
+            !req.seenByRequester;
+        });
+
+        if (myDecisionUpdates.length > 0) {
+          html +=
+            '<div class="user-notif-banner">' +
+            '  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;">' +
+            '    <strong style="color:#93C5FD;">Réponse à vos demandes de réservation (' + myDecisionUpdates.length + ")</strong>" +
+            '    <button type="button" class="btn btn-sm btn-ghost" data-action="dismiss-my-reservation-notices">Marquer comme lu</button>' +
+            "  </div>";
+          myDecisionUpdates.forEach(function (req) {
+            html +=
+              '<div class="alert-line" style="border-top:1px solid rgba(59,130,246,0.2);padding:6px 0;">' +
+              '  <div style="font-size:13px;">' +
+              "    <strong>" + escapeHtml(req.lotLabel) + "</strong> (" + escapeHtml(req.dateText) + ") — " +
+              getReservationBadgeHtml(req.status) +
+              (req.decisionNote ? ' <span class="muted">• ' + escapeHtml(req.decisionNote) + "</span>" : "") +
+              '    <span class="muted"> (par ' + escapeHtml(req.decidedBy || "Référent") + ")</span>" +
+              "  </div>" +
+              '  <button type="button" class="btn btn-sm btn-primary" data-action="ack-reservation-notice" data-req-id="' + escapeHtml(req.id) + '">OK</button>' +
+              "</div>";
+          });
+          html += "</div>";
+        }
+
+        var pendingRequests = (sharedState.reservationRequests || []).filter(function (req) {
+          return req.status === "pending";
+        });
+
+        if (canEdit && pendingRequests.length > 0) {
+          html +=
+            '<div class="card" style="border-color:rgba(59,130,246,0.5);background:rgba(30,58,138,0.16);">' +
+            '  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;">' +
+            '    <strong style="color:#93C5FD;">Demandes de réservation à traiter (' + pendingRequests.length + ")</strong>" +
+            '    <span class="muted">Référents & Admin</span>' +
+            "  </div>";
+          pendingRequests.forEach(function (req) {
+            html +=
+              '<div class="req-card">' +
+              '  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">' +
+              "    <div>" +
+              "      <strong>" + escapeHtml(req.lotLabel) + "</strong> • Date : <strong>" + escapeHtml(req.dateText) + "</strong>" +
+              '      <div class="muted">Demandeur : <strong>' + escapeHtml(req.requesterName || req.requesterEmail) + "</strong> (" + escapeHtml(req.requesterEmail) + ")</div>" +
+              (req.notes ? '<div class="muted" style="margin-top:3px;">Précision : ' + escapeHtml(req.notes) + "</div>" : "") +
+              "    </div>" +
+              '    <div style="display:flex;gap:6px;flex-wrap:wrap;">' +
+              '      <button type="button" class="btn btn-sm btn-success" data-action="decide-reservation" data-req-id="' + escapeHtml(req.id) + '" data-decision="approved">Valider</button>' +
+              '      <button type="button" class="btn btn-sm btn-amber" data-action="decide-reservation" data-req-id="' + escapeHtml(req.id) + '" data-decision="pending">En attente</button>' +
+              '      <button type="button" class="btn btn-sm btn-danger" data-action="decide-reservation" data-req-id="' + escapeHtml(req.id) + '" data-decision="rejected">Refuser</button>' +
+              "    </div>" +
+              "  </div>" +
+              "</div>";
+          });
+          html += "</div>";
+        }
+
         if (alertsCount > 0) {
           html +=
             '<div class="card" style="border-color:rgba(239,68,68,0.5);background:rgba(127,29,29,0.2);">' +
@@ -1758,15 +1899,15 @@
                     ? '<button type="button" class="status-badge ' + (sub.ready ? "st-ready" : "st-incomplete") + '" data-action="toggle-sublot-ready" data-master-id="' + escapeHtml(mLot.id) + '" data-sublot-id="' + escapeHtml(sub.id) + '">' +
                       (sub.ready ? "● Prêt à la formation" : "▲ Incomplet") +
                       "</button>" +
-                      '<button type="button" class="status-badge ' + (sub.reserved ? "st-reserved" : "st-avail") + '" data-action="toggle-sublot-reserved" data-master-id="' + escapeHtml(mLot.id) + '" data-sublot-id="' + escapeHtml(sub.id) + '">' +
-                      (sub.reserved ? "● Réservé" : "● Disponible") +
-                      "</button>"
+                      (sub.reserved
+                        ? '<button type="button" class="status-badge st-reserved" data-action="toggle-sublot-reserved" data-master-id="' + escapeHtml(mLot.id) + '" data-sublot-id="' + escapeHtml(sub.id) + '">● Réservé</button>'
+                        : '<button type="button" class="status-badge st-avail" data-action="open-reservation-request" data-master-id="' + escapeHtml(mLot.id) + '" data-sublot-id="' + escapeHtml(sub.id) + '">Réserver</button>')
                     : '<span class="status-badge readonly ' + (sub.ready ? "st-ready" : "st-incomplete") + '">' +
                       (sub.ready ? "● Prêt à la formation" : "▲ Incomplet") +
                       "</span>" +
-                      '<span class="status-badge readonly ' + (sub.reserved ? "st-reserved" : "st-avail") + '">' +
-                      (sub.reserved ? "● Réservé" : "● Disponible") +
-                      "</span>") +
+                      (sub.reserved
+                        ? '<span class="status-badge readonly st-reserved">● Réservé</span>'
+                        : '<button type="button" class="status-badge st-avail" data-action="open-reservation-request" data-master-id="' + escapeHtml(mLot.id) + '" data-sublot-id="' + escapeHtml(sub.id) + '">Réserver</button>')) +
                   "    </div>" +
                   (sub.reserved && (sub.reservedBy || sub.reservedDates)
                     ? '<div class="muted" style="margin-top:7px;">Réservé par <strong>' + escapeHtml(sub.reservedBy || "Formateur") + "</strong>" + (sub.reservedDates ? " (" + escapeHtml(sub.reservedDates) + ")" : "") + "</div>"
@@ -2150,6 +2291,20 @@
           "  </div>" +
           "</div>" +
 
+          (isAdmin
+            ? '<div class="card" style="border-color:rgba(59,130,246,0.4);">' +
+              '  <h3 style="margin:0 0 6px;font-size:16px;color:#93C5FD;">Notifications par e-mail automatiques</h3>' +
+              '  <p class="muted" style="margin:0 0 10px;">Configurez l’URL Webhook d’envoi d’e-mails (ex. Supabase Edge Function / Make / Zapier / Brevo) pour notifier automatiquement l’administrateur et les référents lors d’un signalement ou d’une demande de réservation, et notifier le demandeur lors d’une décision.</p>' +
+              '  <form id="mail-config-form">' +
+              "    <label>URL du Webhook d'envoi d'e-mail (HTTPS)</label>" +
+              '    <input type="url" id="mail-webhook-url" value="' + escapeHtml((sharedState.mailConfig && sharedState.mailConfig.webhookUrl) || "") + '" placeholder="https://..." />' +
+              "    <label>Nom d'expéditeur affiché</label>" +
+              '    <input type="text" id="mail-sender-label" value="' + escapeHtml((sharedState.mailConfig && sharedState.mailConfig.senderLabel) || "Cellule Secourisme GGD85") + '" />' +
+              '    <button type="submit" class="btn btn-sm btn-primary">Enregistrer la notification mail</button>' +
+              "  </form>" +
+              "</div>"
+            : "") +
+
           '<div class="card">' +
           '  <h3 style="margin:0 0 8px;font-size:16px;">Sauvegarde & Export</h3>' +
           '  <div style="display:flex;flex-wrap:wrap;gap:8px;">' +
@@ -2285,21 +2440,28 @@
       }
 
       function showReservationModal(masterId, sublotId) {
-        if (!canManageLotsAndSites()) return;
+        if (isUserSuspended()) return;
         var mLot = sharedState.masterLots.find(function (m) { return m.id === masterId; });
-        var sub = mLot && mLot.sublots.find(function (s) { return s.id === sublotId; });
+        var sub = mLot && (mLot.sublots || []).find(function (s) { return s.id === sublotId; });
         if (!sub) return;
         var rec = getCurrentUserRecord();
         var defaultAuthor = (rec && rec.name) || (currentUser && ((currentUser.user_metadata && currentUser.user_metadata.full_name) || currentUser.email)) || (verifiedTrainer ? verifiedTrainer.email : "");
+        var defaultEmail = getCurrentUserEmailExact();
 
         openModal(
-          "Réserver : " + mLot.name + " — " + sub.name,
-          '<form id="reserve-form" data-master-id="' + escapeHtml(masterId) + '" data-sublot-id="' + escapeHtml(sublotId) + '">' +
-          "  <label>Formateur / Demandeur</label>" +
-          '  <input type="text" id="res-by" required value="' + escapeHtml(sub.reservedBy || defaultAuthor) + '" placeholder="Grade et nom du formateur" />' +
-          "  <label>Dates ou session concernée</label>" +
-          '  <input type="text" id="res-dates" required value="' + escapeHtml(sub.reservedDates || "") + '" placeholder="Ex: 12-13 déc. — Session PSC" />' +
-          '  <button type="submit" class="btn btn-primary" style="width:100%;">Confirmer la réservation</button>' +
+          "Demande de réservation",
+          '<form id="reserve-request-form" data-master-id="' + escapeHtml(masterId) + '" data-sublot-id="' + escapeHtml(sublotId) + '">' +
+          '  <div class="muted" style="margin-bottom:10px;">Lot concerné : <strong>' + escapeHtml(mLot.name + " — " + sub.name) + "</strong></div>" +
+          "  <label>Demandeur</label>" +
+          '  <input type="text" id="res-req-by" required value="' + escapeHtml(defaultAuthor) + '" placeholder="Grade et nom" />' +
+          "  <label>Adresse e-mail de suivi</label>" +
+          '  <input type="email" id="res-req-email" required value="' + escapeHtml(defaultEmail) + '" placeholder="prenom.nom@exemple.fr" />' +
+          "  <label>Date souhaitée</label>" +
+          '  <input type="date" id="res-req-date" required style="width:100%;background:var(--bg-input);border:1px solid var(--border-light);color:var(--text);border-radius:var(--radius-sm);padding:10px 11px;font-size:14px;font-family:inherit;margin-bottom:11px;" />' +
+          "  <label>Précision / Session (optionnel)</label>" +
+          '  <input type="text" id="res-req-notes" placeholder="Ex: Session PSC salle APL" />' +
+          '  <div class="muted" style="margin-bottom:12px;">La demande sera transmise aux référents et à l’administrateur sans modifier immédiatement le statut du lot.</div>' +
+          '  <button type="submit" class="btn btn-primary" style="width:100%;">Envoyer la demande de réservation</button>' +
           "</form>"
         );
       }
@@ -2616,21 +2778,94 @@
           return;
         }
 
+        if (action === "open-reservation-request") {
+          if (isUserSuspended()) return;
+          showReservationModal(target.getAttribute("data-master-id"), target.getAttribute("data-sublot-id"));
+          return;
+        }
+
         if (action === "toggle-sublot-reserved") {
           if (!canManageLotsAndSites()) return;
           var mRes = sharedState.masterLots.find(function (m) { return m.id === target.getAttribute("data-master-id"); });
           var sRes = mRes && mRes.sublots.find(function (s) { return s.id === target.getAttribute("data-sublot-id"); });
-          if (sRes) {
-            if (sRes.reserved) {
-              sRes.reserved = false;
-              sRes.reservedBy = "";
-              sRes.reservedDates = "";
-              scheduleSharedSync();
-              renderApp();
-            } else {
-              showReservationModal(mRes.id, sRes.id);
+          if (sRes && sRes.reserved) {
+            sRes.reserved = false;
+            sRes.reservedBy = "";
+            sRes.reservedDates = "";
+            scheduleSharedSync();
+            renderApp();
+            showToast("Lot libéré");
+          }
+          return;
+        }
+
+        if (action === "decide-reservation") {
+          if (!canManageLotsAndSites()) return;
+          var reqId = target.getAttribute("data-req-id");
+          var decision = target.getAttribute("data-decision");
+          var reqObj = (sharedState.reservationRequests || []).find(function (r) { return r.id === reqId; });
+          if (!reqObj) return;
+
+          var recDec = getCurrentUserRecord();
+          var decAuthor = (recDec && recDec.name) || (currentUser && ((currentUser.user_metadata && currentUser.user_metadata.full_name) || currentUser.email)) || (verifiedTrainer ? verifiedTrainer.email : "Référent");
+
+          reqObj.status = decision;
+          reqObj.decidedBy = decAuthor;
+          reqObj.decisionUpdatedAt = new Date().toISOString();
+          reqObj.seenByRequester = false;
+
+          if (decision === "approved") {
+            var mTarget = sharedState.masterLots.find(function (m) { return m.id === reqObj.masterId; });
+            var sTarget = mTarget && (mTarget.sublots || []).find(function (s) { return s.id === reqObj.sublotId; });
+            if (sTarget) {
+              sTarget.reserved = true;
+              sTarget.reservedBy = reqObj.requesterName || reqObj.requesterEmail;
+              sTarget.reservedDates = reqObj.dateText;
             }
           }
+
+          scheduleSharedSync();
+          renderApp();
+          showToast("Demande mise à jour : " + getReservationDecisionLabel(decision));
+
+          if (reqObj.requesterEmail) {
+            await triggerEmailNotification({
+              event: "reservation_decision",
+              to: [reqObj.requesterEmail],
+              subject: "[GGD85] Réponse à votre demande de réservation — " + reqObj.lotLabel,
+              message: "Votre demande de réservation pour « " + reqObj.lotLabel + " » à la date du " + reqObj.dateText + " est : " + getReservationDecisionLabel(decision) + " (traitée par " + decAuthor + ").",
+              meta: {
+                requestId: reqObj.id,
+                lotLabel: reqObj.lotLabel,
+                dateText: reqObj.dateText,
+                status: decision,
+                decidedBy: decAuthor
+              }
+            });
+          }
+          return;
+        }
+
+        if (action === "ack-reservation-notice") {
+          var ackId = target.getAttribute("data-req-id");
+          var ackReq = (sharedState.reservationRequests || []).find(function (r) { return r.id === ackId; });
+          if (ackReq) {
+            ackReq.seenByRequester = true;
+            scheduleSharedSync();
+            renderApp();
+          }
+          return;
+        }
+
+        if (action === "dismiss-my-reservation-notices") {
+          var myEmailAck = getCurrentEmail();
+          (sharedState.reservationRequests || []).forEach(function (r) {
+            if (myEmailAck && (r.requesterEmail || "").toLowerCase().trim() === myEmailAck && r.decisionUpdatedAt) {
+              r.seenByRequester = true;
+            }
+          });
+          scheduleSharedSync();
+          renderApp();
           return;
         }
 
@@ -3228,6 +3463,86 @@
           scheduleSharedSync();
           renderApp();
           showToast("Signalement enregistré");
+
+          await triggerEmailNotification({
+            event: "material_alert",
+            to: getStaffEmails(),
+            subject: "[GGD85] Signalement matériel (" + type + ") — " + label,
+            message: "Signalement par " + author + " sur « " + label + " » : " + detail,
+            meta: {
+              masterId: mId,
+              sublotId: sId,
+              type: type,
+              detail: detail,
+              author: author
+            }
+          });
+          return;
+        }
+
+        if (form.id === "reserve-request-form") {
+          if (isUserSuspended()) return;
+          var mReqId = form.getAttribute("data-master-id");
+          var sReqId = form.getAttribute("data-sublot-id");
+          var mReqObj = sharedState.masterLots.find(function (m) { return m.id === mReqId; });
+          var sReqObj = mReqObj && (mReqObj.sublots || []).find(function (s) { return s.id === sReqId; });
+          var reqBy = document.getElementById("res-req-by").value.trim();
+          var reqEmail = document.getElementById("res-req-email").value.trim().toLowerCase();
+          var reqDate = document.getElementById("res-req-date").value.trim();
+          var reqNotes = document.getElementById("res-req-notes").value.trim();
+          var lotLabelReq = (mReqObj ? mReqObj.name : "") + (sReqObj ? " — " + sReqObj.name : "");
+
+          if (!sharedState.reservationRequests) sharedState.reservationRequests = [];
+          sharedState.reservationRequests.unshift({
+            id: uid("req"),
+            masterId: mReqId,
+            sublotId: sReqId,
+            lotLabel: lotLabelReq,
+            requesterName: reqBy,
+            requesterEmail: reqEmail,
+            dateText: reqDate,
+            notes: reqNotes,
+            status: "pending",
+            createdAt: new Date().toISOString(),
+            decidedBy: "",
+            decisionUpdatedAt: "",
+            seenByRequester: true
+          });
+
+          closeModal();
+          scheduleSharedSync();
+          renderApp();
+          showToast("Demande de réservation transmise");
+
+          await triggerEmailNotification({
+            event: "reservation_request",
+            to: getStaffEmails(),
+            subject: "[GGD85] Demande de réservation — " + lotLabelReq + " (" + reqDate + ")",
+            message: "Demande formulée par " + reqBy + " (" + reqEmail + ") pour « " + lotLabelReq + " » à la date du " + reqDate + (reqNotes ? " — " + reqNotes : ""),
+            meta: {
+              masterId: mReqId,
+              sublotId: sReqId,
+              lotLabel: lotLabelReq,
+              requesterName: reqBy,
+              requesterEmail: reqEmail,
+              dateText: reqDate,
+              notes: reqNotes
+            }
+          });
+          return;
+        }
+
+        if (form.id === "mail-config-form") {
+          if (!canManageUsers()) return;
+          var hookVal = document.getElementById("mail-webhook-url").value.trim();
+          var senderVal = document.getElementById("mail-sender-label").value.trim() || "Cellule Secourisme GGD85";
+          sharedState.mailConfig = {
+            webhookUrl: hookVal,
+            senderLabel: senderVal
+          };
+          scheduleSharedSync();
+          renderApp();
+          showToast("Configuration mail enregistrée");
           return;
         }
 
