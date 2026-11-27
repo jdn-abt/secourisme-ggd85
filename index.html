@@ -1369,9 +1369,6 @@
               '  <button type="submit" class="btn btn-primary" style="width:100%;">Enregistrer et continuer</button>' +
               "</form>") +
           '    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px;">' +
-          (configured
-            ? '<button type="button" class="btn btn-ghost btn-sm" data-action="open-sb-config-modal">Paramètres de connexion Supabase</button>'
-            : "") +
           '      <button type="button" class="btn btn-ghost btn-sm" data-action="enter-offline-mode">Continuer en mode hors-ligne local</button>' +
           "    </div>" +
           "  </div>" +
@@ -1815,35 +1812,30 @@
       }
 
       /* =====================================================================
-         12. ONGLET 4 : PARAMÈTRES (SUPABASE, LOGO, SCÉNARIOS, ÉTAPES, JSON)
+         12. ONGLET 4 : PARAMÈTRES (SESSION FORMATEUR, LOGO, SCÉNARIOS, ÉTAPES, JSON)
          ===================================================================== */
       function renderParametresTab() {
         var html =
           '<div class="page-head">' +
           "  <div>" +
           '    <h2 class="page-title">Paramètres</h2>' +
-          '    <p class="page-desc">Synchronisation Supabase, identité visuelle, scénarios et étapes chronomètre.</p>' +
+          '    <p class="page-desc">Session formateur, identité visuelle, scénarios et étapes chronomètre.</p>' +
           "  </div>" +
           "</div>" +
 
           '<div class="card">' +
-          '  <h3 style="margin:0 0 8px;font-size:16px;">Synchronisation multi-utilisateurs (Supabase)</h3>' +
-          '  <p class="muted" style="margin:0 0 10px;">' +
+          '  <h3 style="margin:0 0 8px;font-size:16px;">Session & Synchronisation</h3>' +
+          '  <p class="muted" style="margin:0 0 12px;">' +
           (currentUser
             ? "Connecté en tant que <strong>" + escapeHtml(currentUser.email) + "</strong>."
-            : "Non connecté à Supabase (fonctionnement local uniquement).") +
+            : "Mode hors-ligne local actif.") +
           (syncErrorMessage ? ' <span style="color:#FCA5A5;">(' + escapeHtml(syncErrorMessage) + ")</span>" : "") +
           "  </p>" +
-          '  <form id="settings-sb-form">' +
-          '    <label>Project URL Supabase</label>' +
-          '    <input type="url" id="settings-sb-url" placeholder="https://xxxx.supabase.co" value="' + escapeHtml(supabaseConfig.url) + '" />' +
-          '    <label>Clé publique Supabase</label>' +
-          '    <input type="text" id="settings-sb-key" placeholder="sb_publishable_..." value="' + escapeHtml(supabaseConfig.anonKey) + '" />' +
-          '    <div style="display:flex;flex-wrap:wrap;gap:8px;">' +
-          '      <button type="submit" class="btn btn-primary">Enregistrer configuration Supabase</button>' +
-          (currentUser ? '<button type="button" class="btn btn-ghost" data-action="logout">Se déconnecter</button>' : '<button type="button" class="btn btn-success" data-action="exit-offline-mode">Aller à l’écran de connexion</button>') +
-          "    </div>" +
-          "  </form>" +
+          '  <div style="display:flex;flex-wrap:wrap;gap:8px;">' +
+          (currentUser
+            ? '<button type="button" class="btn btn-ghost" data-action="logout">Se déconnecter</button>'
+            : '<button type="button" class="btn btn-success" data-action="exit-offline-mode">Se connecter avec un compte formateur</button>') +
+          "  </div>" +
           "</div>" +
 
           '<div class="card">' +
@@ -2121,20 +2113,6 @@
             infoBox.textContent = "Un lien de réinitialisation a été envoyé à " + emailVal + " (vérifiez vos courriers indésirables).";
             infoBox.classList.remove("hidden");
           }
-          return;
-        }
-
-        if (action === "open-sb-config-modal") {
-          openModal(
-            "Configuration Supabase",
-            '<form id="supabase-quick-cfg-form">' +
-            '  <label>Project URL Supabase</label>' +
-            '  <input type="url" id="cfg-sb-url" required value="' + escapeHtml(supabaseConfig.url) + '" />' +
-            '  <label>Clé publique Supabase</label>' +
-            '  <input type="text" id="cfg-sb-key" required value="' + escapeHtml(supabaseConfig.anonKey) + '" />' +
-            '  <button type="submit" class="btn btn-primary" style="width:100%;">Enregistrer</button>' +
-            "</form>"
-          );
           return;
         }
 
@@ -2654,7 +2632,7 @@
           return;
         }
 
-        if (form.id === "supabase-quick-cfg-form" || form.id === "settings-sb-form") {
+        if (form.id === "supabase-quick-cfg-form") {
           var uEl = form.querySelector("input[type='url']");
           var kEl = form.querySelector("input[type='text']");
           saveSupabaseConfig({ url: uEl.value, anonKey: kEl.value });
